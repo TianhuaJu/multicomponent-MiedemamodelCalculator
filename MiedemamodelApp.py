@@ -19,6 +19,10 @@ import numpy as np
 
 import BinarySys as BinaryModel
 import UnifiedExtrapolationModel as UEM
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication
+
+
 
 # Define the contribution model function type
 ContributionModelFunc = Callable[[str, str, str, float, str, str], float]
@@ -612,7 +616,7 @@ class CompositionVariationWidget(QWidget):
 		left_layout.setContentsMargins(10, 10, 10, 10)
 		
 		# 基体合金输入
-		matrix_group = QGroupBox("基体合金")
+		matrix_group = QGroupBox("合金组成")
 		matrix_layout = QFormLayout()
 		matrix_layout.setSpacing(10)
 		matrix_layout.setContentsMargins(10, 20, 10, 10)
@@ -1265,7 +1269,6 @@ class CompositionVariationWidget(QWidget):
 		
 		# 绘制画布
 		self.canvas.draw()
-	
 	def export_data (self):
 		"""导出计算数据到CSV文件"""
 		if not self.has_calculated:
@@ -1861,9 +1864,14 @@ class MiedemaModelUI(QMainWindow):
 			QMessageBox.critical(self, "Calculation Error",
 			                     f"Error during calculation: {str(e)}")
 
+# 获取脚本所在目录的绝对路径
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 拼接图标文件路径
+icon_path = os.path.join(current_dir, "app_icon.ico")
 if __name__ == "__main__":
 	# Create and show application
 	app = QApplication(sys.argv)
+	app.setWindowIcon(QIcon(icon_path))
 	window = MiedemaModelUI()
 	window.show()
 	sys.exit(app.exec_())
