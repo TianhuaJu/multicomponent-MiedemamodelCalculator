@@ -82,7 +82,7 @@ class ActivityCompositionVariationWidget(QWidget):
 		self.matrix_input.setPlaceholderText("例如: Fe0.7Ni0.3")
 		self.matrix_input.setMinimumHeight(30)
 		
-		update_btn = QPushButton("更新元素")
+		update_btn = QPushButton("update")
 		update_btn.setFixedWidth(80)
 		update_btn.clicked.connect(self.update_element_dropdowns)
 		
@@ -90,7 +90,7 @@ class ActivityCompositionVariationWidget(QWidget):
 		comp_input_row.addWidget(self.matrix_input)
 		comp_input_row.addWidget(update_btn)
 		
-		matrix_layout.addRow("基体合金组成:", comp_input_row)
+		matrix_layout.addRow("合金组成:", comp_input_row)
 		
 		# 目标元素和变化元素选择
 		element_layout = QGridLayout()
@@ -113,12 +113,12 @@ class ActivityCompositionVariationWidget(QWidget):
 		self.solvent_combo = QComboBox()
 		self.solvent_combo.setMinimumHeight(30)
 		
-		element_layout.addWidget(QLabel("目标元素:"), 0, 0)
-		element_layout.addWidget(self.target_element_combo, 0, 1)
-		element_layout.addWidget(QLabel("变化元素:"), 1, 0)
-		element_layout.addWidget(self.var_element_combo, 1, 1)
-		element_layout.addWidget(QLabel("溶剂元素:"), 2, 0)
-		element_layout.addWidget(self.solvent_combo, 2, 1)
+		element_layout.addWidget(QLabel("溶剂元素:"), 0, 0)
+		element_layout.addWidget(self.solvent_combo, 0, 1)
+		element_layout.addWidget(QLabel("目标元素:"), 1, 0)
+		element_layout.addWidget(self.target_element_combo, 1, 1)
+		element_layout.addWidget(QLabel("变化元素:"), 2, 0)
+		element_layout.addWidget(self.var_element_combo, 2, 1)
 		
 		matrix_layout.addRow("元素选择:", element_layout)
 		
@@ -167,7 +167,7 @@ class ActivityCompositionVariationWidget(QWidget):
 		range_layout.addWidget(self.step_comp, 1, 1)
 		
 		range_widget.setLayout(range_layout)
-		matrix_layout.addRow("变化元素浓度范围:", range_widget)
+		matrix_layout.addRow("浓度范围:", range_widget)
 		
 		matrix_group.setLayout(matrix_layout)
 		left_layout.addWidget(matrix_group)
@@ -213,16 +213,12 @@ class ActivityCompositionVariationWidget(QWidget):
 		
 		params_layout.addRow("热力学性质:", self.property_combo)
 		
-		# 选择溶剂元素
-		self.solvent_combo = QComboBox()
-		self.solvent_combo.setMinimumHeight(30)
-		params_layout.addRow("溶剂元素:", self.solvent_combo)
 		
-		# 几何模型选择
+		# 外推模型选择
 		self.geo_model_combo = QComboBox()
 		self.geo_model_combo.addItems(["UEM1", "UEM2_N", "GSM", "T-K", "K", "M"])
 		self.geo_model_combo.setMinimumHeight(30)
-		params_layout.addRow("几何模型:", self.geo_model_combo)
+		params_layout.addRow("外推模型:", self.geo_model_combo)
 		
 		params_group.setLayout(params_layout)
 		left_layout.addWidget(params_group)
@@ -441,7 +437,7 @@ class ActivityCompositionVariationWidget(QWidget):
 			if solvent_index >= 0:
 				self.solvent_combo.setCurrentIndex(solvent_index)
 			elif len(elements) >= 3:
-				self.solvent_combo.setCurrentIndex(2)  # 默认选择第三个元素
+				self.solvent_combo.setCurrentIndex(3)  # 默认选择第三个元素
 			elif len(elements) >= 1:
 				self.solvent_combo.setCurrentIndex(0)  # 默认选择第一个元素
 			
@@ -521,7 +517,7 @@ class ActivityCompositionVariationWidget(QWidget):
 		else:
 			order_degree = "IM"
 		
-		# 获取几何模型
+		# 获取外推模型
 		geo_model = self.geo_model_combo.currentText()
 		
 		# 检查选中的模型
@@ -879,7 +875,7 @@ class ActivityCompositionVariationWidget(QWidget):
 			writer.writerow(['温度', f"{self.current_parameters['temperature']} K"])
 			writer.writerow(['相态', "固态" if self.current_parameters["phase_state"] == "S" else "液态"])
 			writer.writerow(['类型', self.current_parameters["order_degree"]])
-			writer.writerow(['几何模型', self.current_parameters["geo_model"]])
+			writer.writerow(['外推模型', self.current_parameters["geo_model"]])
 			writer.writerow([])  # 空行
 			
 			# 写入标题行 - 数据部分
@@ -978,7 +974,7 @@ class ActivityCompositionVariationWidget(QWidget):
 		worksheet.write(6, 1, "固态" if self.current_parameters["phase_state"] == "S" else "液态", param_format)
 		worksheet.write(7, 0, '类型', param_format)
 		worksheet.write(7, 1, self.current_parameters["order_degree"], param_format)
-		worksheet.write(8, 0, '几何模型', param_format)
+		worksheet.write(8, 0, '外推模型', param_format)
 		worksheet.write(8, 1, self.current_parameters["geo_model"], param_format)
 		
 		# 写入标题行 - 数据部分
