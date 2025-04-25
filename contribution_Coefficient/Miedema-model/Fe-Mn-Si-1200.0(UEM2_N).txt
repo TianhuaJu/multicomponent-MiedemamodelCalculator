@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Fe-Mn:	0.044,	Fe-Si:	0.197	in	Mn-Si
+Mn-Fe:	0.038,	Mn-Si:	0.269	in	Fe-Si
+Si-Mn:	0.217,	Si-Fe:	0.136	in	Mn-Fe

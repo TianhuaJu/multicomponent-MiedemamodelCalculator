@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Pb-Sn:	0.0,	Pb-Sb:	0.0	in	Sn-Sb
+Sn-Pb:	0.0,	Sn-Sb:	1.0	in	Pb-Sb
+Sb-Sn:	1.0,	Sb-Pb:	0.0	in	Sn-Pb

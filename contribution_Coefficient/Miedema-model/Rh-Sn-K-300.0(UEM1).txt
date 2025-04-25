@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Sn:	0.0,	Rh-K:	0.0	in	Sn-K
+Sn-Rh:	0.0,	Sn-K:	0.04	in	Rh-K
+K-Sn:	0.042,	K-Rh:	0.0	in	Sn-Rh

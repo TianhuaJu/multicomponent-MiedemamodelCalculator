@@ -1,0 +1,2 @@
+k-i{alpha^k_i(ij)}		k-j {alpha^k_j(ij)}
+k-i{alpha^k_i(ij)}		k-j {alpha^k_j(ij)}

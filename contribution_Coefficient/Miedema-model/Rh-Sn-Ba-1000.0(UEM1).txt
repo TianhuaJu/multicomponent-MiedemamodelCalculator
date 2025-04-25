@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Sn:	0.007,	Rh-Ba:	0.002	in	Sn-Ba
+Sn-Rh:	0.008,	Sn-Ba:	0.0	in	Rh-Ba
+Ba-Sn:	0.0,	Ba-Rh:	0.003	in	Sn-Rh

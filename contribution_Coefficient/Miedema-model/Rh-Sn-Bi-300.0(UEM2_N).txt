@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Sn:	0.133,	Rh-Bi:	0.177	in	Sn-Bi
+Sn-Rh:	0.068,	Sn-Bi:	0.512	in	Rh-Bi
+Bi-Sn:	0.495,	Bi-Rh:	0.087	in	Sn-Rh

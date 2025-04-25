@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Sn-Bi:	0.493,	Sn-Na:	0.251	in	Bi-Na
+Bi-Sn:	0.747,	Bi-Na:	0.001	in	Sn-Na
+Na-Bi:	0.001,	Na-Sn:	0.614	in	Bi-Sn

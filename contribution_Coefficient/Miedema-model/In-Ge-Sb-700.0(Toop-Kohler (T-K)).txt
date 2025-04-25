@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+In-Ge:	0.0,	In-Sb:	1.0	in	Ge-Sb
+Ge-In:	0.0,	Ge-Sb:	0.0	in	In-Sb
+Sb-Ge:	0.0,	Sb-In:	1.0	in	Ge-In

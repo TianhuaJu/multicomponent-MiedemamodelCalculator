@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Bi:	0.0,	Rh-Li:	0.006	in	Bi-Li
+Bi-Rh:	0.0,	Bi-Li:	0.0	in	Rh-Li
+Li-Bi:	0.0,	Li-Rh:	0.007	in	Bi-Rh

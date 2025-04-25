@@ -1,0 +1,10 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Bi:	0.0,	Rh-Cs:	0.0	in	Bi-Cs
+Bi-Rh:	0.0,	Bi-Cs:	0.0	in	Rh-Cs
+Cs-Bi:	0.0,	Cs-Rh:	0.0	in	Bi-Rh
+Rh-Bi:	0.0,	Rh-Cs:	0.0	in	Bi-Cs
+Bi-Rh:	0.0,	Bi-Cs:	0.0	in	Rh-Cs
+Cs-Bi:	0.0,	Cs-Rh:	0.0	in	Bi-Rh
+Rh-Bi:	0.0,	Rh-Cs:	0.0	in	Bi-Cs
+Bi-Rh:	0.0,	Bi-Cs:	0.0	in	Rh-Cs
+Cs-Bi:	0.0,	Cs-Rh:	0.0	in	Bi-Rh

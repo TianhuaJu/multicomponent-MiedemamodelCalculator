@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Mo-Pd:	0.4,	Mo-Au:	0.431	in	Pd-Au
+Pd-Mo:	0.012,	Pd-Au:	0.982	in	Mo-Au
+Au-Pd:	0.981,	Au-Mo:	0.013	in	Pd-Mo

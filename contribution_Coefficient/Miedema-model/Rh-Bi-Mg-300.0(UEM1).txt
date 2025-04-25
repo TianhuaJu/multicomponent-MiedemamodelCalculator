@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Bi:	0.0,	Rh-Mg:	0.158	in	Bi-Mg
+Bi-Rh:	0.0,	Bi-Mg:	0.005	in	Rh-Mg
+Mg-Bi:	0.002,	Mg-Rh:	0.141	in	Bi-Rh

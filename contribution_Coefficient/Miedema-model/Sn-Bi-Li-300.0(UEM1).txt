@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Sn-Bi:	0.772,	Sn-Li:	0.0	in	Bi-Li
+Bi-Sn:	0.778,	Bi-Li:	0.0	in	Sn-Li
+Li-Bi:	0.0,	Li-Sn:	0.0	in	Bi-Sn

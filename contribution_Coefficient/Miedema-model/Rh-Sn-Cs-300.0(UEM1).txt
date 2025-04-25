@@ -1,0 +1,10 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Sn:	0.0,	Rh-Cs:	0.0	in	Sn-Cs
+Sn-Rh:	0.0,	Sn-Cs:	0.003	in	Rh-Cs
+Cs-Sn:	0.003,	Cs-Rh:	0.0	in	Sn-Rh
+Rh-Sn:	0.0,	Rh-Cs:	0.0	in	Sn-Cs
+Sn-Rh:	0.0,	Sn-Cs:	0.003	in	Rh-Cs
+Cs-Sn:	0.003,	Cs-Rh:	0.0	in	Sn-Rh
+Rh-Sn:	0.0,	Rh-Cs:	0.0	in	Sn-Cs
+Sn-Rh:	0.0,	Sn-Cs:	0.003	in	Rh-Cs
+Cs-Sn:	0.003,	Cs-Rh:	0.0	in	Sn-Rh

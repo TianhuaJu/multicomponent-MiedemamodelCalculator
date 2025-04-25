@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Fe-Mn:	0.622,	Fe-Mg:	0.378	in	Mn-Mg
+Mn-Fe:	0.839,	Mn-Mg:	0.161	in	Fe-Mg
+Mg-Mn:	0.24,	Mg-Fe:	0.76	in	Mn-Fe

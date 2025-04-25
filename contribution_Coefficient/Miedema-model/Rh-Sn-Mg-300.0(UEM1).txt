@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Sn:	0.0,	Rh-Mg:	0.17	in	Sn-Mg
+Sn-Rh:	0.0,	Sn-Mg:	0.053	in	Rh-Mg
+Mg-Sn:	0.024,	Mg-Rh:	0.118	in	Sn-Rh

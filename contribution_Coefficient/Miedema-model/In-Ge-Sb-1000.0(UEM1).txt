@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+In-Ge:	0.002,	In-Sb:	0.787	in	Ge-Sb
+Ge-In:	0.021,	Ge-Sb:	0.036	in	In-Sb
+Sb-Ge:	0.004,	Sb-In:	0.781	in	Ge-In

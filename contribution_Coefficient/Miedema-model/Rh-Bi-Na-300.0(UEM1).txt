@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Bi:	0.0,	Rh-Na:	0.024	in	Bi-Na
+Bi-Rh:	0.0,	Bi-Na:	0.009	in	Rh-Na
+Na-Bi:	0.006,	Na-Rh:	0.019	in	Bi-Rh

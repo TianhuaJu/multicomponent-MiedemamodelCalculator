@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Sn-Bi:	0.668,	Sn-Cs:	0.332	in	Bi-Cs
+Bi-Sn:	0.149,	Bi-Cs:	0.851	in	Sn-Cs
+Cs-Bi:	0.92,	Cs-Sn:	0.08	in	Bi-Sn

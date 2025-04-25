@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Sn-Bi:	0.5,	Sn-Cs:	0.5	in	Bi-Cs
+Bi-Sn:	0.5,	Bi-Cs:	0.5	in	Sn-Cs
+Cs-Bi:	0.5,	Cs-Sn:	0.5	in	Bi-Sn

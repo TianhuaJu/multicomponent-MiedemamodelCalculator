@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Sn-Bi:	0.726,	Sn-Mg:	0.005	in	Bi-Mg
+Bi-Sn:	0.751,	Bi-Mg:	0.0	in	Sn-Mg
+Mg-Bi:	0.003,	Mg-Sn:	0.04	in	Bi-Sn

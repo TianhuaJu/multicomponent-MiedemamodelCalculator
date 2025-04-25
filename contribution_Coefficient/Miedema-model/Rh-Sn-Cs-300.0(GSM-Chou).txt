@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Sn:	0.22,	Rh-Cs:	0.78	in	Sn-Cs
+Sn-Rh:	0.698,	Sn-Cs:	0.302	in	Rh-Cs
+Cs-Sn:	0.109,	Cs-Rh:	0.891	in	Sn-Rh

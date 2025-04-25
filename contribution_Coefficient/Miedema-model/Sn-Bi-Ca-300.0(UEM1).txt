@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Sn-Bi:	0.758,	Sn-Ca:	0.0	in	Bi-Ca
+Bi-Sn:	0.733,	Bi-Ca:	0.003	in	Sn-Ca
+Ca-Bi:	0.027,	Ca-Sn:	0.001	in	Bi-Sn

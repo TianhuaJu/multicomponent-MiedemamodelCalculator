@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Sn:	0.0,	Rh-Ca:	0.0	in	Sn-Ca
+Sn-Rh:	0.0,	Sn-Ca:	0.002	in	Rh-Ca
+Ca-Sn:	0.002,	Ca-Rh:	0.0	in	Sn-Rh

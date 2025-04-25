@@ -1,0 +1,4 @@
+k-i{alpha^k_i(ij)}		k-j {alpha^k_j(ij)}
+Rh-Re:	1.0,	Rh-Au:	0.0	in	Re-Au
+Re-Rh:	1.0,	Re-Au:	0.0	in	Rh-Au
+Au-Re:	0.0,	Au-Rh:	0.0	in	Re-Rh

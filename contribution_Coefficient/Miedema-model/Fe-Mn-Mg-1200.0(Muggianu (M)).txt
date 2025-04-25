@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Fe-Mn:	0.5,	Fe-Mg:	0.5	in	Mn-Mg
+Mn-Fe:	0.5,	Mn-Mg:	0.5	in	Fe-Mg
+Mg-Mn:	0.5,	Mg-Fe:	0.5	in	Mn-Fe

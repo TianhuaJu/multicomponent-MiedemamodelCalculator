@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Bi:	0.366,	Rh-Ba:	0.198	in	Bi-Ba
+Bi-Rh:	0.257,	Bi-Ba:	0.411	in	Rh-Ba
+Ba-Bi:	0.474,	Ba-Rh:	0.161	in	Bi-Rh

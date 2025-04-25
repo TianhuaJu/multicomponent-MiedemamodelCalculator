@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Pb-Hg:	0,	Pb-Cd:	0	in	Hg-Cd
+Hg-Pb:	0,	Hg-Cd:	0	in	Pb-Cd
+Cd-Hg:	0,	Cd-Pb:	0	in	Hg-Pb

@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Sn-Bi:	0.943,	Sn-Ba:	0.057	in	Bi-Ba
+Bi-Sn:	0.905,	Bi-Ba:	0.095	in	Sn-Ba
+Ba-Bi:	0.637,	Ba-Sn:	0.363	in	Bi-Sn

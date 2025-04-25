@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Bi:	0.0,	Rh-Be:	0.0	in	Bi-Be
+Bi-Rh:	0.0,	Bi-Be:	0.0	in	Rh-Be
+Be-Bi:	0.0,	Be-Rh:	0.0	in	Bi-Rh

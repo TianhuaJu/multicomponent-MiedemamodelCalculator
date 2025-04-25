@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Mn-Si:	0.5,	Mn-Mg:	0.5	in	Si-Mg
+Si-Mn:	0.5,	Si-Mg:	0.5	in	Mn-Mg
+Mg-Si:	0.5,	Mg-Mn:	0.5	in	Si-Mn

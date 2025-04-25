@@ -1,0 +1,3 @@
+Ru-Sn:	0.0,	Ru-Te:	0.0	in	Sn-Te
+Sn-Ru:	0.0,	Sn-Te:	1.0	in	Sn-Te
+Te-Sn:	1.0,	Te-Ru:	0.0	in	Sn-Te

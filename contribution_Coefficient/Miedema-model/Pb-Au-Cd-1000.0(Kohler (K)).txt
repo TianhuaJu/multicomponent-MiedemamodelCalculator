@@ -1,0 +1,6 @@
+Pb-Au:	0,	Pb-Cd:	0	in	Au-Cd
+Au-Pb:	0,	Au-Cd:	0	in	Pb-Cd
+Cd-Au:	0,	Cd-Pb:	0	in	Au-Pb
+Pb-Au:	0,	Pb-Cd:	0	in	Au-Cd
+Au-Pb:	0,	Au-Cd:	0	in	Pb-Cd
+Cd-Au:	0,	Cd-Pb:	0	in	Au-Pb

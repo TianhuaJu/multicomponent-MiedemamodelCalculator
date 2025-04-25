@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Sn-Bi:	0.781,	Sn-Be:	0.0	in	Bi-Be
+Bi-Sn:	0.784,	Bi-Be:	0.0	in	Sn-Be
+Be-Bi:	0.0,	Be-Sn:	0.0	in	Bi-Sn

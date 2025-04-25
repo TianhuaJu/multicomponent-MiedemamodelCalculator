@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Fe-Si:	0.207,	Fe-Mg:	0.793	in	Si-Mg
+Si-Fe:	0.653,	Si-Mg:	0.347	in	Fe-Mg
+Mg-Si:	0.122,	Mg-Fe:	0.878	in	Si-Fe

@@ -1,0 +1,3 @@
+Tl-Bi:	0,	Tl-Te:	0	in	Bi-Te
+Bi-Tl:	0,	Bi-Te:	0	in	Tl-Te
+Te-Bi:	0,	Te-Tl:	0	in	Bi-Tl

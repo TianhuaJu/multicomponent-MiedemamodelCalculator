@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Rh-Sn:	0.0,	Rh-Na:	0.028	in	Sn-Na
+Sn-Rh:	0.0,	Sn-Na:	0.654	in	Rh-Na
+Na-Sn:	0.601,	Na-Rh:	0.004	in	Sn-Rh

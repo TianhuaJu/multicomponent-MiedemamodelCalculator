@@ -1,0 +1,4 @@
+k-i{alpha^k_i(ij)}		k-j {alpha^k_j(ij)}
+Tl-Ge:	0.0,	Tl-Sb:	1.0	in	Ge-Sb
+Ge-Tl:	0.0,	Ge-Sb:	0.0	in	Tl-Sb
+Sb-Ge:	0.0,	Sb-Tl:	1.0	in	Ge-Tl
