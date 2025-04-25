@@ -73,11 +73,21 @@ class ActivityCoefficientWidget(QWidget):
 		comp_layout.setSpacing(10)
 		comp_layout.setContentsMargins(10, 20, 10, 10)
 		
+		comp_input_row = QHBoxLayout()
 		self.comp_input = QLineEdit()
 		self.comp_input.setPlaceholderText("例如: Fe0.7Ni0.3")
 		self.comp_input.setMinimumHeight(30)
+		
+		update_btn = QPushButton("更新元素")
+		update_btn.setFixedWidth(80)
+		update_btn.clicked.connect(self.update_element_dropdowns)
+		
+		comp_input_row.addWidget(self.comp_input)
+		comp_input_row.addWidget(update_btn)
+		
 		comp_layout.addWidget(QLabel("合金组成:"))
-		comp_layout.addWidget(self.comp_input)
+		comp_layout.addLayout(comp_input_row)
+		#comp_layout.addWidget(self.comp_input)
 		
 		# Solute and solvent selection
 		solute_layout = QHBoxLayout()
@@ -85,20 +95,18 @@ class ActivityCoefficientWidget(QWidget):
 		
 		self.solute_combo = QComboBox()
 		self.solute_combo.setMinimumHeight(30)
-		self.solute_combo.setEditable(True)
-		common_elements = ["Al", "Cr", "Mn", "Si", "Co", "Cu", "Ni", "Ti", "V", "Zn", "Mo", "W", "Nb", "Ta", "Rh", "Pd",
-		                   "Pt", "Au"]
-		self.solute_combo.addItems(common_elements)
+		self.solute_combo.setEditable(False)
+		
 		
 		self.solvent_combo = QComboBox()
 		self.solvent_combo.setMinimumHeight(30)
-		self.solvent_combo.setEditable(True)
-		self.solvent_combo.addItems(common_elements)
+		self.solvent_combo.setEditable(False)
 		
-		solute_layout.addWidget(QLabel("溶质元素:"))
-		solute_layout.addWidget(self.solute_combo)
+		
 		solute_layout.addWidget(QLabel("溶剂元素:"))
 		solute_layout.addWidget(self.solvent_combo)
+		solute_layout.addWidget(QLabel("溶质元素:"))
+		solute_layout.addWidget(self.solute_combo)
 		
 		comp_layout.addLayout(solute_layout)
 		comp_group.setLayout(comp_layout)
@@ -141,6 +149,8 @@ class ActivityCoefficientWidget(QWidget):
 		])
 		self.property_combo.setMinimumHeight(30)
 		self.property_combo.currentIndexChanged.connect(self.update_plot)
+		self.comp_input.textChanged.connect(self.update_element_dropdowns)
+		
 		params_layout.addRow("热力学性质:", self.property_combo)
 		
 		# Geometric model selection
@@ -185,13 +195,13 @@ class ActivityCoefficientWidget(QWidget):
 		
 		self.results_text = QTextEdit()
 		self.results_text.setReadOnly(True)
-		self.results_text.setMinimumHeight(100)
+		self.results_text.setMinimumHeight(250)
 		self.results_text.setFont(QFont("Consolas", 11))
 		self.results_text.setStyleSheet("background-color: #FAFAFA;")
 		results_layout.addWidget(self.results_text)
 		
 		results_group.setLayout(results_layout)
-		left_layout.addWidget(results_group)
+		left_layout.addWidget(results_group,3)
 		
 		# Button area
 		buttons_layout = QHBoxLayout()
@@ -321,6 +331,37 @@ class ActivityCoefficientWidget(QWidget):
 		# Apply styles
 		self.setStyleSheet(label_style + input_style + group_style + checkbox_style + button_style)
 	
+	# 在 ActivityCoefficientWidget 类中添加方法来更新元素下拉列表
+	def update_element_dropdowns (self):
+		"""根据当前输入的合金组成更新溶质和溶剂元素下拉列表"""
+		comp_input = self.comp_input.text().strip()
+		if not comp_input:
+			return
+		
+		try:
+			# 解析合金组成
+			composition = self.parse_composition(comp_input)
+			if not composition:
+				return
+			
+			# 获取合金中的元素列表
+			elements = list(composition.keys())
+			
+			# 清空当前下拉列表内容
+			self.solute_combo.clear()
+			self.solvent_combo.clear()
+			
+			# 添加合金中的元素到下拉列表
+			self.solute_combo.addItems(elements)
+			self.solvent_combo.addItems(elements)
+			
+			# 如果有两个或更多元素，设置默认选择
+			if len(elements) >= 2:
+				self.solute_combo.setCurrentIndex(1)  # 默认选择第二个元素作为溶质
+				self.solvent_combo.setCurrentIndex(0)  # 默认选择第一个元素作为溶剂
+		
+		except Exception as e:
+			print(f"更新元素下拉列表时出错: {str(e)}")
 	def parse_composition (self, comp_input):
 		"""Parse alloy composition input string, such as Fe0.7Ni0.3"""
 		import re
@@ -431,9 +472,12 @@ class ActivityCoefficientWidget(QWidget):
 		progress.setMinimumDuration(0)
 		progress.setValue(0)
 		
+		
+		
 		# Calculate for each model
 		try:
 			progress_count = 0
+			current_results = self.results_text.toPlainText()
 			results_text = "计算结果：\n"
 			
 			for model_key in selected_models:
@@ -451,6 +495,7 @@ class ActivityCoefficientWidget(QWidget):
 				# Calculate activity
 				progress.setLabelText(f"计算 {model_key} 模型的活度...")
 				
+				# 修改calculate_all_properties方法
 				try:
 					activity_value = UEM.activity_calc(
 							composition, solute, solvent, temperature,
@@ -461,8 +506,22 @@ class ActivityCoefficientWidget(QWidget):
 					results_text += f"{model_key} 模型活度: {activity_value:.6f}\n"
 				
 				except Exception as e:
-					print(f"计算活度时出错 ({model_key}): {str(e)}")
-					results_text += f"{model_key} 模型活度: 计算失败\n"
+					error_msg = str(e)
+					print(f"计算活度时出错 ({model_key}): {error_msg}")
+					
+					# 尝试使用备选的数值方法
+					try:
+						print("尝试使用数值方法计算...")
+						activity_value = UEM.activity_calc_numerical(
+								composition, solute, solvent, temperature,
+								phase_state, order_degree, model_func, geo_model
+						)
+						
+						self.calculation_results["activity"][model_key]["value"] = activity_value
+						results_text += f"{model_key} 模型活度: {activity_value:.6f} (数值方法)\n"
+					except Exception as e2:
+						print(f"数值方法也失败: {str(e2)}")
+						results_text += f"{model_key} 模型活度: 计算失败\n"
 				
 				progress_count += 1
 				progress.setValue(progress_count)
@@ -482,3 +541,332 @@ class ActivityCoefficientWidget(QWidget):
 				except Exception as e:
 					print(f"计算活度系数时出错 ({model_key}): {str(e)}")
 					results_text += f"{model_key} 模型活度系数: 计算失败\n"
+					
+					try:
+						print("尝试使用数值方法计算...")
+						activity_value = UEM.activityCoefficient_calc_numerical(
+								composition, solute, solvent, temperature,
+								phase_state, order_degree, model_func, geo_model
+						)
+						
+						self.calculation_results["activity_coefficient"][model_key]["value"] = activity_value
+						results_text += f"{model_key} 模型活度系数: {activity_value:.6f} (数值方法)\n"
+					except Exception as e2:
+						print(f"数值方法也失败: {str(e2)}")
+						results_text += f"{model_key} 模型活度系数: 计算失败\n"
+				
+				results_text += "\n"
+				
+				progress_count += 1
+				progress.setValue(progress_count)
+			
+			# Close progress dialog
+			progress.close()
+		
+			# Check if we have valid data
+			has_valid_data = False
+			for prop in self.calculation_results:
+				for model_key in self.calculation_results[prop]:
+					if self.calculation_results[prop][model_key]["value"] is not None:
+						has_valid_data = True
+						break
+				if has_valid_data:
+					break
+			
+			if not has_valid_data:
+				QMessageBox.warning(self, "无有效数据", "未能获得有效计算结果。请检查输入参数。")
+				return
+			
+			# Mark as calculated
+			self.has_calculated = True
+			
+			from datetime import datetime
+			timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			results_text = f"--- {timestamp} ---\n" + results_text + "\n"
+			combined_results = current_results + '\n' + results_text
+			self.results_text.setText(combined_results)
+			# Update results display
+			self.results_text.setText(results_text)
+			
+			# Update plot
+			self.update_plot()
+			
+			# Show success message
+			QMessageBox.information(self, "计算完成", "活度和活度系数计算完成，可查看结果和图表。")
+		
+		except Exception as e:
+			# Close progress dialog
+			progress.close()
+			
+			# Show error message
+			QMessageBox.critical(self, "计算错误", f"计算过程中发生错误: {str(e)}")
+			traceback.print_exc()
+	
+	def update_plot (self):
+		"""Update plot based on selected thermodynamic property"""
+		if not self.has_calculated:
+			return
+		
+		# Get current selected property
+		property_index = self.property_combo.currentIndex()
+		property_types = ["activity", "activity_coefficient"]
+		if property_index >= len(property_types):
+			return
+		
+		selected_property = property_types[property_index]
+		
+		# Get calculation results for the property
+		model_results = self.calculation_results[selected_property]
+		
+		# No data, return
+		if not model_results:
+			return
+		
+		# Draw chart
+		self.plot_model_comparison(model_results, selected_property)
+	
+	def plot_model_comparison (self, model_results, property_type):
+		"""Plot comparison of different models"""
+		self.figure.clear()
+		
+		# Create bar chart
+		ax = self.figure.add_subplot(111)
+		
+		# Prepare data for bar chart
+		models = []
+		values = []
+		
+		for model_key, data in model_results.items():
+			if data["value"] is not None:
+				models.append(self.model_checkboxes[model_key].text())
+				values.append(data["value"])
+		
+		if not models:
+			return
+		
+		# Set colors for bars
+		colors = ['#4A86E8', '#E8993A', '#6AA84F', '#CC0000', '#674EA7', '#999999']
+		colors = colors[:len(models)]  # Limit to number of models
+		
+		# Create bar chart
+		bars = ax.bar(models, values, color=colors, width=0.6)
+		
+		# Add value labels on top of bars
+		for bar in bars:
+			height = bar.get_height()
+			ax.text(bar.get_x() + bar.get_width() / 2., height + 0.01 * max(values),
+			        f'{height:.4f}', ha='center', va='bottom', fontsize=9)
+		
+		# Set title and labels
+		if property_type == "activity":
+			title_property = "Activity"
+			y_label = "Activity (a)"
+		else:  # activity_coefficient
+			title_property = "Activity Coefficient"
+			y_label = "Activity Coefficient (γ)"
+		
+		# Set axis labels
+		ax.set_xlabel("Extrapolation Model", fontsize=12)
+		ax.set_ylabel(y_label, fontsize=12)
+		
+		# Build title
+		comp_input = self.current_parameters["comp_input"]
+		solute = self.current_parameters["solute"]
+		solvent = self.current_parameters["solvent"]
+		temperature = self.current_parameters["temperature"]
+		phase_dict = {"S": "Solid", "L": "Liquid"}
+		phase_text = phase_dict.get(self.current_parameters["phase_state"], "Solid")
+		order_text = self.current_parameters["order_degree"]
+		geo_model = self.current_parameters["geo_model"]
+		
+		title = f"{title_property} of {solute} in {comp_input}\n" \
+		        f"Solvent: {solvent}, T: {temperature}K, Phase: {phase_text}, Type: {order_text}, Geo: {geo_model}"
+		ax.set_title(title, fontsize=12, pad=10)
+		
+		# Add grid
+		ax.grid(True, linestyle='--', alpha=0.7, axis='y')
+		
+		# Set axis tick font size
+		ax.tick_params(axis='both', which='major', labelsize=10)
+		
+		# Rotate x-axis labels for better readability
+		plt.setp(ax.get_xticklabels(), rotation=30, ha='right')
+		
+		# Adjust layout
+		self.figure.tight_layout()
+		
+		# Draw canvas
+		self.canvas.draw()
+	
+	def export_data (self):
+		"""Export calculation data to CSV file"""
+		if not self.has_calculated:
+			QMessageBox.warning(self, "导出错误", "请先计算数据再导出")
+			return
+		
+		# Get save file path
+		file_path, _ = QFileDialog.getSaveFileName(
+				self, "导出数据", "", "CSV文件 (*.csv);;Excel文件 (*.xlsx);;所有文件 (*.*)"
+		)
+		
+		if not file_path:
+			return
+		
+		try:
+			# Determine export format based on file extension
+			if file_path.lower().endswith('.xlsx'):
+				self.export_to_excel(file_path)
+			else:
+				# Default to CSV
+				if not file_path.lower().endswith('.csv'):
+					file_path += '.csv'
+				self.export_to_csv(file_path)
+			
+			QMessageBox.information(self, "导出成功", f"数据已成功导出到: {file_path}")
+		except Exception as e:
+			QMessageBox.critical(self, "导出错误", f"导出数据时发生错误: {str(e)}")
+			traceback.print_exc()
+	
+	def export_to_csv (self, file_path):
+		"""Export data to CSV format"""
+		import csv
+		
+		# Get all models
+		all_models = set()
+		
+		for prop_data in self.calculation_results.values():
+			for model_key in prop_data:
+				all_models.add(model_key)
+		
+		# Sort models
+		all_models = sorted(all_models)
+		
+		# Prepare data
+		with open(file_path, 'w', newline='') as csvfile:
+			writer = csv.writer(csvfile)
+			
+			# Write header row - parameter info
+			writer.writerow(['计算参数'])
+			writer.writerow(['合金组成', self.current_parameters["comp_input"]])
+			writer.writerow(['溶质元素', self.current_parameters["solute"]])
+			writer.writerow(['溶剂元素', self.current_parameters["solvent"]])
+			writer.writerow(['温度', f"{self.current_parameters['temperature']} K"])
+			writer.writerow(['相态', "固态" if self.current_parameters["phase_state"] == "S" else "液态"])
+			writer.writerow(['类型', self.current_parameters["order_degree"]])
+			writer.writerow(['几何模型', self.current_parameters["geo_model"]])
+			writer.writerow([])  # Empty row
+			
+			# Write header row - data section
+			writer.writerow(['外推模型', '活度 (a)', '活度系数 (γ)'])
+			
+			# Write data rows
+			for model in all_models:
+				row = [model]
+				
+				# Activity
+				activity_value = ''
+				if model in self.calculation_results["activity"]:
+					data = self.calculation_results["activity"][model]
+					if data["value"] is not None:
+						activity_value = f"{data['value']:.6f}"
+				row.append(activity_value)
+				
+				# Activity coefficient
+				act_coef_value = ''
+				if model in self.calculation_results["activity_coefficient"]:
+					data = self.calculation_results["activity_coefficient"][model]
+					if data["value"] is not None:
+						act_coef_value = f"{data['value']:.6f}"
+				row.append(act_coef_value)
+				
+				writer.writerow(row)
+	
+	def export_to_excel (self, file_path):
+		"""Export data to Excel format"""
+		try:
+			import xlsxwriter
+		except ImportError:
+			QMessageBox.warning(self, "缺少依赖", "导出Excel需要安装xlsxwriter模块。将导出为CSV格式。")
+			self.export_to_csv(file_path.replace('.xlsx', '.csv'))
+			return
+		
+		# Create workbook and worksheet
+		workbook = xlsxwriter.Workbook(file_path)
+		worksheet = workbook.add_worksheet('计算结果')
+		
+		# Set formats
+		header_format = workbook.add_format({
+			'bold': True,
+			'align': 'center',
+			'valign': 'vcenter',
+			'border': 1
+		})
+		
+		param_format = workbook.add_format({
+			'align': 'center',
+			'valign': 'vcenter'
+		})
+		
+		data_format = workbook.add_format({
+			'num_format': '0.000000',
+			'align': 'center'
+		})
+		
+		# Get all models
+		all_models = set()
+		
+		for prop_data in self.calculation_results.values():
+			for model_key in prop_data:
+				all_models.add(model_key)
+		
+		# Sort models
+		all_models = sorted(all_models)
+		
+		# Write header row - parameter info
+		worksheet.write(0, 0, '计算参数', header_format)
+		worksheet.write(1, 0, '合金组成', param_format)
+		worksheet.write(1, 1, self.current_parameters["comp_input"], param_format)
+		worksheet.write(2, 0, '溶质元素', param_format)
+		worksheet.write(2, 1, self.current_parameters["solute"], param_format)
+		worksheet.write(3, 0, '溶剂元素', param_format)
+		worksheet.write(3, 1, self.current_parameters["solvent"], param_format)
+		worksheet.write(4, 0, '温度', param_format)
+		worksheet.write(4, 1, f"{self.current_parameters['temperature']} K", param_format)
+		worksheet.write(5, 0, '相态', param_format)
+		worksheet.write(5, 1, "固态" if self.current_parameters["phase_state"] == "S" else "液态", param_format)
+		worksheet.write(6, 0, '类型', param_format)
+		worksheet.write(6, 1, self.current_parameters["order_degree"], param_format)
+		worksheet.write(7, 0, '几何模型', param_format)
+		worksheet.write(7, 1, self.current_parameters["geo_model"], param_format)
+		
+		# Write header row - data section
+		row = 9
+		worksheet.write(row, 0, '外推模型', header_format)
+		worksheet.write(row, 1, '活度 (a)', header_format)
+		worksheet.write(row, 2, '活度系数 (γ)', header_format)
+		
+		# Write data rows
+		row += 1
+		for model in all_models:
+			worksheet.write(row, 0, model, param_format)
+			
+			# Activity
+			if model in self.calculation_results["activity"]:
+				data = self.calculation_results["activity"][model]
+				if data["value"] is not None:
+					worksheet.write(row, 1, data["value"], data_format)
+			
+			# Activity coefficient
+			if model in self.calculation_results["activity_coefficient"]:
+				data = self.calculation_results["activity_coefficient"][model]
+				if data["value"] is not None:
+					worksheet.write(row, 2, data["value"], data_format)
+			
+			row += 1
+		
+		# Set column widths
+		worksheet.set_column(0, 0, 15)
+		worksheet.set_column(1, 2, 20)
+		
+		# Save and close workbook
+		workbook.close()

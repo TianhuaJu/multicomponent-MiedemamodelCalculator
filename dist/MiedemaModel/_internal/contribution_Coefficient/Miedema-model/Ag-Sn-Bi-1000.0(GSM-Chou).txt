@@ -1,4 +1,0 @@
-k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
-Ag-Sn:	0.948,	Ag-Bi:	0.052	in	Sn-Bi
-Sn-Ag:	0.915,	Sn-Bi:	0.085	in	Ag-Bi
-Bi-Sn:	0.629,	Bi-Ag:	0.371	in	Sn-Ag

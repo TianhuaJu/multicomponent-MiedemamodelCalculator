@@ -1,0 +1,7 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Nd-Sm:	1.0,	Nd-Ru:	0.0	in	Sm-Ru
+Sm-Nd:	1.0,	Sm-Ru:	0.0	in	Nd-Ru
+Ru-Sm:	0.002,	Ru-Nd:	0.002	in	Sm-Nd
+Nd-Sm:	1.0,	Nd-Ru:	0.0	in	Sm-Ru
+Sm-Nd:	1.0,	Sm-Ru:	0.0	in	Nd-Ru
+Ru-Sm:	0.002,	Ru-Nd:	0.002	in	Sm-Nd

@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Nd-Sm:	0.998,	Nd-Mg:	0.001	in	Sm-Mg
+Sm-Nd:	0.998,	Sm-Mg:	0.002	in	Nd-Mg
+Mg-Sm:	0.518,	Mg-Nd:	0.365	in	Sm-Nd

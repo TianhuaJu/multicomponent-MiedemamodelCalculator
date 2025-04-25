@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Sm-Ru:	0,	Sm-Mg:	0	in	Ru-Mg
+Ru-Sm:	0,	Ru-Mg:	0	in	Sm-Mg
+Mg-Ru:	0,	Mg-Sm:	0	in	Ru-Sm

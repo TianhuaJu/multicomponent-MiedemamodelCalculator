@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Nd-Ru:	0.5,	Nd-Mg:	0.5	in	Ru-Mg
+Ru-Nd:	0.5,	Ru-Mg:	0.5	in	Nd-Mg
+Mg-Ru:	0.5,	Mg-Nd:	0.5	in	Ru-Nd

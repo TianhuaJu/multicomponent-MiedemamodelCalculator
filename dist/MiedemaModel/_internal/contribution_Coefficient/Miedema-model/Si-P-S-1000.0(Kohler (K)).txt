@@ -1,3 +1,0 @@
-Si-P:	0,	Si-S:	0	in	P-S
-P-Si:	0,	P-S:	0	in	P-S
-S-P:	0,	S-Si:	0	in	P-S

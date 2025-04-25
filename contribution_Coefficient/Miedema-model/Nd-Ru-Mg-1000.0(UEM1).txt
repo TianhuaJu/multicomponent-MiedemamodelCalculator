@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Nd-Ru:	0.0,	Nd-Mg:	0.841	in	Ru-Mg
+Ru-Nd:	0.0,	Ru-Mg:	0.922	in	Nd-Mg
+Mg-Ru:	0.636,	Mg-Nd:	0.275	in	Ru-Nd
