@@ -2399,7 +2399,7 @@ class MiedemaModelUI(QMainWindow):
 	def init_ui (self):
 		"""Initialize the UI components"""
 		self.setWindowTitle("Multi-Component Miedema Model Calculator Pro")
-		self.setGeometry(100, 100, 1200, 700)
+		self.setGeometry(100, 100, 800, 400)
 		
 		# Set global font size
 		app_font = QFont()

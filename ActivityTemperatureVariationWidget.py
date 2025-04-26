@@ -1,25 +1,19 @@
-import os
-import sys
+import math
 import traceback
-import datetime
-from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QIcon, QColor, QPalette
-from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDoubleSpinBox,
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox,
                              QFileDialog, QFormLayout, QGroupBox, QHBoxLayout,
-                             QLabel, QLineEdit, QMainWindow, QMessageBox,
-                             QProgressDialog, QPushButton, QSplitter, QTableWidget,
-                             QTableWidgetItem, QTextEdit, QVBoxLayout, QWidget,
-                             QGridLayout, QFrame, QSizePolicy, QSpacerItem,
-                             QHeaderView, QTabWidget)
+                             QLabel, QLineEdit, QMessageBox,
+                             QProgressDialog, QPushButton, QSplitter, QTextEdit, QVBoxLayout, QWidget,
+                             QGridLayout, QFrame, QSizePolicy)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
-import BinarySys as BinaryModel
 import UnifiedExtrapolationModel as UEM
 
 
@@ -50,9 +44,6 @@ class ActivityTemperatureVariationWidget(QWidget):
 			"temp_range": []
 		}
 		
-		# 存储历史计算结果
-		self.calculation_history = {}
-		
 		self.has_calculated = False  # 跟踪是否已经计算
 		self.legend_cids = []  # 保存图例事件连接ID
 		
@@ -60,32 +51,8 @@ class ActivityTemperatureVariationWidget(QWidget):
 		self.setWindowTitle("热力学性质随温度变化计算器")
 		self.resize(1200, 800)
 		
-		# 设置调色板
-		self.setup_palette()
-		
 		# 初始化UI
 		self.init_ui()
-	
-	def setup_palette (self):
-		"""设置应用程序调色板"""
-		palette = QPalette()
-		
-		# 设置背景色为浅灰色
-		palette.setColor(QPalette.Window, QColor(240, 240, 245))
-		
-		# 设置控件背景色为白色
-		palette.setColor(QPalette.Base, QColor(255, 255, 255))
-		
-		# 设置文本颜色
-		palette.setColor(QPalette.Text, QColor(30, 30, 30))
-		palette.setColor(QPalette.WindowText, QColor(30, 30, 30))
-		
-		# 设置高亮颜色
-		palette.setColor(QPalette.Highlight, QColor(70, 130, 230))
-		palette.setColor(QPalette.HighlightedText, QColor(255, 255, 255))
-		
-		# 应用调色板
-		self.setPalette(palette)
 	
 	def init_ui (self):
 		"""初始化用户界面组件"""
@@ -105,7 +72,7 @@ class ActivityTemperatureVariationWidget(QWidget):
 		# 创建左侧控制面板
 		left_panel = self.create_left_panel()
 		
-		# 创建右侧面板（包括结果表格和图表）
+		# 创建右侧面板（包括结果显示和图表）
 		right_panel = self.create_right_panel()
 		
 		# 添加面板到分割器
@@ -135,7 +102,7 @@ class ActivityTemperatureVariationWidget(QWidget):
 		left_layout.setContentsMargins(15, 15, 15, 15)
 		
 		# 添加标题
-		title_label = QLabel("热力学计算参数")
+		title_label = QLabel("合金热力学计算")
 		title_font = QFont("Microsoft YaHei", 15, QFont.Bold)  # 增大字体
 		title_label.setFont(title_font)
 		title_label.setAlignment(Qt.AlignCenter)
@@ -294,7 +261,7 @@ class ActivityTemperatureVariationWidget(QWidget):
 	
 	def create_temperature_range_group (self):
 		"""创建温度范围设置区域"""
-		group = QGroupBox("温度范围")
+		group = QGroupBox("Temperature")
 		group_font = QFont("Microsoft YaHei", 13, QFont.Bold)  # 增大字体
 		group.setFont(group_font)
 		
@@ -330,19 +297,19 @@ class ActivityTemperatureVariationWidget(QWidget):
 		self.step_temp.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
 		
 		# 添加标签
-		min_label = self.create_label("最小温度:")
+		min_label = self.create_label("min:")
 		min_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		max_label = self.create_label("最大温度:")
+		max_label = self.create_label("max:")
 		max_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		step_label = self.create_label("温度步长:")
+		step_label = self.create_label("step:")
 		step_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
 		
 		# 添加组件到网格布局
-		layout.addWidget(min_label, 0, 0)
+		layout.addWidget(min_label, 0, 0,Qt.AlignRight)
 		layout.addWidget(self.min_temp, 0, 1)
-		layout.addWidget(max_label, 1, 0)
+		layout.addWidget(max_label, 1, 0,Qt.AlignRight)
 		layout.addWidget(self.max_temp, 1, 1)
-		layout.addWidget(step_label, 2, 0)
+		layout.addWidget(step_label, 2, 0,Qt.AlignRight)
 		layout.addWidget(self.step_temp, 2, 1)
 		
 		# 设置布局
@@ -377,11 +344,13 @@ class ActivityTemperatureVariationWidget(QWidget):
 		layout.setSpacing(15)
 		layout.setContentsMargins(15, 20, 15, 15)
 		layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
-		
-		# 相态选择
+		layout.setLabelAlignment(Qt.AlignRight)
+		layout.setFormAlignment(Qt.AlignRight)
+		fix_Width = 200
 		self.phase_combo = self.create_combo_box()
 		self.phase_combo.addItems(["固态 (S)", "液态 (L)"])
 		self.phase_combo.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
+		self.phase_combo.setMinimumWidth(fix_Width)
 		
 		phase_label = self.create_label("相态:")
 		phase_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
@@ -390,8 +359,8 @@ class ActivityTemperatureVariationWidget(QWidget):
 		# 有序度选择
 		self.order_combo = self.create_combo_box()
 		self.order_combo.addItems(["固溶体 (SS)", "非晶态 (AMP)", "金属间化合物 (IM)"])
-		self.order_combo.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		
+		self.order_combo.setFont(QFont("Microsoft YaHei", 7))  # 增大字体
+		self.order_combo.setMinimumWidth(fix_Width)
 		order_label = self.create_label("类型:")
 		order_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
 		layout.addRow(order_label, self.order_combo)
@@ -400,23 +369,15 @@ class ActivityTemperatureVariationWidget(QWidget):
 		self.property_combo = self.create_combo_box()
 		self.property_combo.addItems([
 			"活度 (a)",
-			"活度系数 (lnγ)"
+			"活度系数 (γ)"
 		])
 		self.property_combo.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
 		self.property_combo.currentIndexChanged.connect(self.update_plot)
-		
+		self.property_combo.setMinimumWidth(fix_Width)
+		self.property_combo.width()
 		property_label = self.create_label("热力学性质:")
 		property_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
 		layout.addRow(property_label, self.property_combo)
-		
-		# 外推模型选择
-		self.geo_model_combo = self.create_combo_box()
-		self.geo_model_combo.addItems(["UEM1", "UEM2_N", "GSM", "T-K", "K", "M"])
-		self.geo_model_combo.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		
-		geo_model_label = self.create_label("外推模型:")
-		geo_model_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		layout.addRow(geo_model_label, self.geo_model_combo)
 		
 		# 设置布局
 		group.setLayout(layout)
@@ -574,7 +535,7 @@ class ActivityTemperatureVariationWidget(QWidget):
 		return frame
 	
 	def create_right_panel (self):
-		"""创建右侧面板（包括结果表格和图表）"""
+		"""创建右侧面板（包括结果文本区域和图表）"""
 		right_panel = QWidget()
 		right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 		
@@ -608,7 +569,7 @@ class ActivityTemperatureVariationWidget(QWidget):
 		return right_panel
 	
 	def create_results_panel (self):
-		"""创建结果显示区域"""
+		"""创建计算结果显示区域（使用富文本编辑框）"""
 		results_frame = QFrame()
 		results_frame.setFrameShape(QFrame.StyledPanel)
 		results_frame.setStyleSheet("""
@@ -624,128 +585,35 @@ class ActivityTemperatureVariationWidget(QWidget):
 		layout.setContentsMargins(10, 10, 10, 10)
 		
 		# 创建标题
-		title_label = QLabel("计算结果与历史数据")
+		title_label = QLabel("计算结果")
 		title_font = QFont("Microsoft YaHei", 14, QFont.Bold)
 		title_label.setFont(title_font)
 		title_label.setAlignment(Qt.AlignCenter)
 		title_label.setStyleSheet("color: #2C3E50; margin-bottom: 5px;")
 		layout.addWidget(title_label)
 		
-		# 创建结果表格
-		self.results_table = QTableWidget()
-		self.results_table.setStyleSheet("""
-            QTableWidget {
+		# 创建富文本编辑框用于显示结果
+		self.results_text = QTextEdit()
+		self.results_text.setReadOnly(True)
+		self.results_text.setStyleSheet("""
+            QTextEdit {
                 border: 1px solid #BDC3C7;
                 border-radius: 4px;
                 background-color: white;
-            }
-            QHeaderView::section {
-                background-color: #F5F5F5;
-                padding: 6px;
-                font-weight: bold;
-                border: 1px solid #E0E0E0;
                 font-size: 12pt;
-            }
-            QTableWidget::item {
-                padding: 4px;
-                font-size: 11pt;
+                padding: 10px;
             }
         """)
 		
-		# 设置表格列
-		self.results_table.setColumnCount(4)
-		self.results_table.setHorizontalHeaderLabels(["温度(K)", "模型", "活度(a)", "活度系数(lnγ)"])
+		# 设置默认文本
+		self.results_text.setHtml(
+				"<div style='text-align: center; margin-top: 50px; color: #7F8C8D; font-size: 14pt;'>"
+				"点击<b>计算</b>按钮开始计算，结果将显示在此处"
+				"</div>"
+		)
 		
-		# 调整列宽
-		header = self.results_table.horizontalHeader()
-		header.setSectionResizeMode(QHeaderView.Stretch)
-		self.results_table.verticalHeader().setVisible(False)  # 隐藏行号
-		
-		# 创建历史记录控制区域
-		history_frame = QFrame()
-		history_frame.setFrameShape(QFrame.NoFrame)
-		
-		history_layout = QHBoxLayout()
-		history_layout.setContentsMargins(0, 0, 0, 0)
-		
-		# 历史记录下拉菜单
-		history_label = QLabel("历史记录:")
-		history_label.setFont(QFont("Microsoft YaHei", 12))
-		
-		self.history_combo = QComboBox()
-		self.history_combo.setMinimumHeight(32)
-		self.history_combo.setMinimumWidth(200)
-		self.history_combo.setFont(QFont("Microsoft YaHei", 11))
-		self.history_combo.setStyleSheet("""
-            QComboBox {
-                border: 1px solid #BDC3C7;
-                border-radius: 4px;
-                padding: 5px;
-                background-color: #F8F9F9;
-            }
-            QComboBox:hover {
-                border: 1px solid #3498DB;
-            }
-            QComboBox::drop-down {
-                subcontrol-origin: padding;
-                subcontrol-position: center right;
-                width: 24px;
-                border-left: 1px solid #BDC3C7;
-            }
-        """)
-		self.history_combo.currentIndexChanged.connect(self.load_history_item)
-		
-		# 保存当前结果按钮
-		save_button = QPushButton("保存当前结果")
-		save_button.setFont(QFont("Microsoft YaHei", 11))
-		save_button.setStyleSheet("""
-            QPushButton {
-                background-color: #3498DB;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 5px 10px;
-            }
-            QPushButton:hover {
-                background-color: #2980B9;
-            }
-            QPushButton:pressed {
-                background-color: #1F618D;
-            }
-        """)
-		save_button.clicked.connect(self.save_current_result)
-		
-		# 清除历史按钮
-		clear_button = QPushButton("清除历史")
-		clear_button.setFont(QFont("Microsoft YaHei", 11))
-		clear_button.setStyleSheet("""
-            QPushButton {
-                background-color: #E74C3C;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 5px 10px;
-            }
-            QPushButton:hover {
-                background-color: #C0392B;
-            }
-            QPushButton:pressed {
-                background-color: #A93226;
-            }
-        """)
-		clear_button.clicked.connect(self.clear_history)
-		
-		# 添加控件到布局
-		history_layout.addWidget(history_label)
-		history_layout.addWidget(self.history_combo)
-		history_layout.addWidget(save_button)
-		history_layout.addWidget(clear_button)
-		
-		history_frame.setLayout(history_layout)
-		
-		# 添加表格和历史控制到主布局
-		layout.addWidget(self.results_table)
-		layout.addWidget(history_frame)
+		# 添加到布局
+		layout.addWidget(self.results_text)
 		
 		# 设置布局
 		results_frame.setLayout(layout)
@@ -976,6 +844,7 @@ class ActivityTemperatureVariationWidget(QWidget):
 	def calculate_all_properties (self):
 		"""计算所有热力学性质随温度变化"""
 		# 获取基本参数
+		global activity_value, activity_coef_value
 		matrix_input = self.matrix_input.text().strip()
 		if not matrix_input:
 			QMessageBox.warning(self, "输入错误", "请输入基体合金组成")
@@ -1014,9 +883,6 @@ class ActivityTemperatureVariationWidget(QWidget):
 		else:
 			order_degree = "IM"
 		
-		# 获取外推模型
-		geo_model = self.geo_model_combo.currentText()
-		
 		# 检查选中的模型
 		selected_models = [key for key, checkbox in self.model_checkboxes.items() if checkbox.isChecked()]
 		if not selected_models:
@@ -1027,11 +893,6 @@ class ActivityTemperatureVariationWidget(QWidget):
 		min_temp = self.min_temp.value()
 		max_temp = self.max_temp.value()
 		step_temp = self.step_temp.value()
-		
-		if min_temp >= max_temp:
-			QMessageBox.warning(self, "温度设置错误", "最小温度必须小于最大温度")
-			return
-		
 		temp_range = np.arange(min_temp, max_temp + step_temp / 2, step_temp)
 		
 		# 存储当前参数
@@ -1041,7 +902,6 @@ class ActivityTemperatureVariationWidget(QWidget):
 			"solvent": solvent,
 			"phase_state": phase_state,
 			"order_degree": order_degree,
-			"geo_model": geo_model,
 			"temp_range": temp_range.tolist()
 		}
 		
@@ -1064,22 +924,6 @@ class ActivityTemperatureVariationWidget(QWidget):
 		# 显示进度对话框
 		progress = QProgressDialog("计算中...", "取消", 0, len(selected_models) * len(temp_range) * 2, self)
 		progress.setWindowTitle("计算进度")
-		progress.setStyleSheet("""
-            QProgressDialog {
-                font-size: 12px;
-                background-color: white;
-            }
-            QProgressBar {
-                border: 1px solid #BDC3C7;
-                border-radius: 4px;
-                text-align: center;
-                background-color: #F8F9F9;
-            }
-            QProgressBar::chunk {
-                background-color: #3498DB;
-                width: 5px;
-            }
-        """)
 		progress.setWindowModality(Qt.WindowModal)
 		progress.setMinimumDuration(0)
 		progress.setValue(0)
@@ -1088,77 +932,128 @@ class ActivityTemperatureVariationWidget(QWidget):
 		try:
 			progress_count = 0
 			
-			# 为每个选中的模型执行计算
-			for model_key in selected_models:
-				if progress.wasCanceled():
-					break
+			# 开始使用HTML格式化以提高可读性
+			results_text = """
+	        <style>
+	            table {width: 100%; border-collapse: collapse; margin-bottom: 10px;}
+	            th {background-color: #3498DB; color: white; text-align: center; padding: 5px; border: 1px solid #BDC3C7;}
+	            td {border: 1px solid #BDC3C7; padding: 5px; text-align: center;}
+	            .temp-header {background-color: #ECF0F1; font-weight: bold;}
+	            .model-name {font-weight: bold; text-align: left;}
+	            .success {color: #2ECC71;}
+	            .failure {color: #E74C3C;}
+	        </style>
+	        """
+			
+			from datetime import datetime
+			timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			results_text += f"<h3>计算结果 - {timestamp}</h3>"
+			
+			# 添加计算参数
+			results_text += f"""
+	        <p><b>计算参数：</b> 合金: {matrix_input} | 溶质: {solute} | 溶剂: {solvent} |
+	        相态: {'固态' if phase_state == 'S' else '液态'} | 类型: {order_degree}</p>
+	        """
+			
+			# 按温度构建结果表格
+			for temp in temp_range:
+				results_text += f"""
+	            <table>
+	                <tr><th colspan="3">温度: {temp:.1f} K</th></tr>
+	                <tr>
+	                    <th width="30%">模型</th>
+	                    <th width="35%">活度 (a<sub>{solute}</sub>)</th>
+	                    <th width="35%">活度系数 (γ<sub>{solute}</sub>)</th>
+	                </tr>
+	            """
 				
-				model_func = model_functions.get(model_key)
-				if not model_func:
-					continue
-				
-				# 初始化该模型的不同热力学性质的数据结构
-				for prop in ["activity", "activity_coefficient"]:
-					self.calculation_results[prop][model_key] = {"temperatures": [], "values": []}
-				
-				# 计算不同温度下的活度和活度系数
-				valid_temperatures = []
-				valid_activity_values = []
-				valid_activity_coef_values = []
-				
-				for temp in temp_range:
+				# 为每个选中的模型执行计算
+				for model_key in selected_models:
 					if progress.wasCanceled():
 						break
+					
+					model_func = model_functions.get(model_key)
+					if not model_func:
+						continue
+					
+					# 初始化该模型的数据结构（如果是第一个温度点）
+					if model_key not in self.calculation_results["activity"]:
+						for prop in ["activity", "activity_coefficient"]:
+							self.calculation_results[prop][model_key] = {"temperatures": [], "values": []}
 					
 					# 计算活度
 					try:
 						progress.setLabelText(f"计算 {model_key} 模型在温度 {temp:.1f}K 下的活度...")
 						activity_value = UEM.activity_calc_numerical(
 								base_matrix, solute, solvent, temp,
-								phase_state, order_degree, model_func, geo_model
+								phase_state, order_degree, model_func, model_key
 						)
+						activity_text = f'<span class="success">{activity_value:.6f}</span>'
 					except Exception as e:
+						activity_value = None
+						activity_text = f'<span class="failure">计算失败</span>'
 						print(f"计算温度 {temp}K 的活度时出错: {str(e)}")
-						# 尝试使用数值方法
-						try:
-							# 这里可以添加数值方法的实现
-							activity_value = None  # 暂时设为None
-						except:
-							activity_value = None
 					
 					# 计算活度系数
 					try:
 						progress.setLabelText(f"计算 {model_key} 模型在温度 {temp:.1f}K 下的活度系数...")
 						activity_coef_value = UEM.activityCoefficient_calc_numerical(
 								base_matrix, solute, solvent, temp,
-								phase_state, order_degree, model_func, geo_model
-						)
+								phase_state, order_degree, model_func,model_key)
+						activity_coef_value = math.exp(activity_coef_value)
+						activity_coef_text = f'<span class="success">{activity_coef_value:.6f}</span>'
 					except Exception as e:
+						activity_coef_value = None
+						activity_coef_text = f'<span class="failure">计算失败</span>'
 						print(f"计算温度 {temp}K 的活度系数时出错: {str(e)}")
-						# 尝试使用数值方法
-						try:
-							# 这里可以添加数值方法的实现
-							activity_coef_value = None  # 暂时设为None
-						except:
-							activity_coef_value = None
+					
+					# 添加该模型的结果行
+					results_text += f"""
+	                <tr>
+	                    <td class="model-name">{self.model_checkboxes[model_key].text()}</td>
+	                    <td>{activity_text}</td>
+	                    <td>{activity_coef_text}</td>
+	                </tr>
+	                """
 					
 					# 只有当计算成功时才添加数据点
 					if activity_value is not None or activity_coef_value is not None:
-						valid_temperatures.append(temp)
-						valid_activity_values.append(activity_value)
-						valid_activity_coef_values.append(activity_coef_value)
+						# 存储温度数据
+						if temp not in self.calculation_results["activity"][model_key]["temperatures"]:
+							self.calculation_results["activity"][model_key]["temperatures"].append(temp)
+							self.calculation_results["activity_coefficient"][model_key]["temperatures"].append(temp)
+						
+						# 存储活度和活度系数数据
+						if activity_value is not None:
+							self.calculation_results["activity"][model_key]["values"].append(activity_value)
+						if activity_coef_value is not None:
+							self.calculation_results["activity_coefficient"][model_key]["values"].append(
+								activity_coef_value)
 					
 					progress_count += 2
 					progress.setValue(progress_count)
 				
-				# 存储有效的计算结果
-				if valid_temperatures:
-					self.calculation_results["activity"][model_key]["temperatures"] = np.array(valid_temperatures)
-					self.calculation_results["activity"][model_key]["values"] = np.array(valid_activity_values)
-					self.calculation_results["activity_coefficient"][model_key]["temperatures"] = np.array(
-							valid_temperatures)
-					self.calculation_results["activity_coefficient"][model_key]["values"] = np.array(
-							valid_activity_coef_values)
+				results_text += "</table>"
+			
+			# 确保每个模型的数据是numpy数组，用于绘图
+			for prop in self.calculation_results:
+				for model_key in self.calculation_results[prop]:
+					if len(self.calculation_results[prop][model_key]["temperatures"]) > 0:
+						self.calculation_results[prop][model_key]["temperatures"] = np.array(
+								self.calculation_results[prop][model_key]["temperatures"])
+						self.calculation_results[prop][model_key]["values"] = np.array(
+								self.calculation_results[prop][model_key]["values"])
+			
+			# 获取之前的结果
+			current_results = self.results_text.toHtml()
+			
+			# 合并新旧结果（保留之前的计算记录）
+			if "点击<b>计算</b>按钮开始计算" in current_results:
+				# 第一次计算，替换默认文本
+				self.results_text.setHtml(results_text)
+			else:
+				# 新结果添加到顶部
+				self.results_text.setHtml(results_text + "<hr>" + current_results)
 			
 			# 关闭进度对话框
 			progress.close()
@@ -1181,12 +1076,11 @@ class ActivityTemperatureVariationWidget(QWidget):
 			# 标记已计算
 			self.has_calculated = True
 			
-			# 更新图表和结果表格
+			# 更新图表
 			self.update_plot()
-			self.update_results_table()
 			
 			# 显示成功消息
-			QMessageBox.information(self, "计算完成", "计算完成，您可以查看表格和图表结果。")
+			QMessageBox.information(self, "计算完成", "计算完成，您可以查看图表结果。")
 		
 		except Exception as e:
 			# 关闭进度对话框
@@ -1195,129 +1089,6 @@ class ActivityTemperatureVariationWidget(QWidget):
 			# 显示错误消息
 			QMessageBox.critical(self, "计算错误", f"计算过程中发生错误: {str(e)}")
 			traceback.print_exc()
-	
-	def update_results_table (self):
-		"""更新结果表格"""
-		if not self.has_calculated:
-			return
-		
-		# 获取当前选择的热力学性质
-		property_index = self.property_combo.currentIndex()
-		property_types = ["activity", "activity_coefficient"]
-		if property_index >= len(property_types):
-			return
-		
-		selected_property = property_types[property_index]
-		
-		# 获取该性质的计算结果
-		model_results = self.calculation_results[selected_property]
-		
-		# 清空表格
-		self.results_table.clearContents()
-		self.results_table.setRowCount(0)
-		
-		# 收集所有温度点和模型
-		all_temps = set()
-		all_models = []
-		
-		for model_key, data in model_results.items():
-			if "temperatures" in data and len(data["temperatures"]) > 0:
-				all_temps.update(data["temperatures"])
-				all_models.append(model_key)
-		
-		# 如果没有数据则返回
-		if not all_temps:
-			return
-		
-		# 排序温度点
-		all_temps = sorted(all_temps)
-		
-		# 设置表格行数
-		total_rows = len(all_temps) * len(all_models)
-		self.results_table.setRowCount(total_rows)
-		
-		# 填充表格
-		row_index = 0
-		for temp in all_temps:
-			for model_key in all_models:
-				# 检查该模型是否有该温度点的数据
-				if model_key not in model_results:
-					continue
-				
-				data = model_results[model_key]
-				if "temperatures" not in data or len(data["temperatures"]) == 0:
-					continue
-				
-				# 查找温度点索引
-				temp_idx = np.where(data["temperatures"] == temp)[0]
-				if len(temp_idx) == 0:
-					continue
-				
-				temp_idx = temp_idx[0]
-				
-				# 获取活度/活度系数值
-				if selected_property == "activity":
-					prop_value = data["values"][temp_idx]
-					# 获取对应的活度系数值
-					if model_key in self.calculation_results["activity_coefficient"]:
-						act_coef_data = self.calculation_results["activity_coefficient"][model_key]
-						if "temperatures" in act_coef_data and len(act_coef_data["temperatures"]) > 0:
-							act_coef_idx = np.where(act_coef_data["temperatures"] == temp)[0]
-							if len(act_coef_idx) > 0:
-								act_coef_value = act_coef_data["values"][act_coef_idx[0]]
-							else:
-								act_coef_value = None
-						else:
-							act_coef_value = None
-					else:
-						act_coef_value = None
-				else:  # activity_coefficient
-					act_coef_value = data["values"][temp_idx]
-					# 获取对应的活度值
-					if model_key in self.calculation_results["activity"]:
-						act_data = self.calculation_results["activity"][model_key]
-						if "temperatures" in act_data and len(act_data["temperatures"]) > 0:
-							act_idx = np.where(act_data["temperatures"] == temp)[0]
-							if len(act_idx) > 0:
-								prop_value = act_data["values"][act_idx[0]]
-							else:
-								prop_value = None
-						else:
-							prop_value = None
-					else:
-						prop_value = None
-				
-				# 填充表格
-				# 温度
-				temp_item = QTableWidgetItem(f"{temp:.1f}")
-				temp_item.setTextAlignment(Qt.AlignCenter)
-				self.results_table.setItem(row_index, 0, temp_item)
-				
-				# 模型
-				model_item = QTableWidgetItem(model_key)
-				model_item.setTextAlignment(Qt.AlignCenter)
-				self.results_table.setItem(row_index, 1, model_item)
-				
-				# 活度
-				if prop_value is not None and not np.isnan(prop_value):
-					activity_item = QTableWidgetItem(f"{prop_value:.6e}")
-					activity_item.setTextAlignment(Qt.AlignCenter)
-					self.results_table.setItem(row_index, 2, activity_item)
-				
-				# 活度系数
-				if act_coef_value is not None and not np.isnan(act_coef_value):
-					activity_coef_item = QTableWidgetItem(f"{act_coef_value:.6e}")
-					activity_coef_item.setTextAlignment(Qt.AlignCenter)
-					self.results_table.setItem(row_index, 3, activity_coef_item)
-				
-				row_index += 1
-		
-		# 调整表格显示的实际行数
-		self.results_table.setRowCount(row_index)
-		
-		# 调整行高
-		for i in range(row_index):
-			self.results_table.setRowHeight(i, 28)
 	
 	def update_plot (self):
 		"""基于选择的热力学性质更新图表"""
@@ -1348,17 +1119,18 @@ class ActivityTemperatureVariationWidget(QWidget):
 		
 		self.figure.clear()
 		
-		# 设置图表风格
-		plt.style.use('seaborn-v0_8-whitegrid')
-		
 		# 创建子图
 		ax = self.figure.add_subplot(111)
 		
 		# 设置颜色循环和标记
-		colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+		colors = ['r', 'b', 'g', 'c', 'm', 'y', 'k']
 		markers = ['o', 's', '^', 'D', 'v', '<', '>']
 		plots = []
 		labels = []
+		
+		# 获取温度范围，用于添加参考线
+		min_temp = float('inf')
+		max_temp = float('-inf')
 		
 		# 为每个模型绘制线条
 		for i, (model_key, data) in enumerate(model_results.items()):
@@ -1367,6 +1139,11 @@ class ActivityTemperatureVariationWidget(QWidget):
 			
 			temperatures = data["temperatures"]
 			values = data["values"]
+			
+			# 更新温度范围
+			if len(temperatures) > 0:
+				min_temp = min(min_temp, np.min(temperatures))
+				max_temp = max(max_temp, np.max(temperatures))
 			
 			# 确保数据为numpy数组并且是数值类型
 			if not isinstance(values, np.ndarray):
@@ -1408,48 +1185,135 @@ class ActivityTemperatureVariationWidget(QWidget):
 			line, = ax.plot(temperatures, values,
 			                color=colors[color_idx],
 			                marker=markers[marker_idx],
-			                linewidth=2.5,
-			                markersize=7,
-			                alpha=0.8,
+			                linewidth=2,
+			                markersize=6,
 			                label=self.model_checkboxes[model_key].text())
 			
 			plots.append(line)
 			labels.append(self.model_checkboxes[model_key].text())
 		
+		# 如果有有效的温度范围，添加参考线
+		if min_temp != float('inf') and max_temp != float('-inf'):
+			temp_range = np.linspace(min_temp, max_temp, 100)
+			
+			if property_type == "activity":
+				# 为活度添加摩尔分数线
+				# 提取溶质的摩尔分数
+				matrix_input = self.current_parameters["base_matrix"]
+				solute = self.current_parameters["solute"]
+				composition = self.parse_composition(matrix_input)
+				
+				if solute in composition:
+					mole_fraction = composition[solute]
+					# 绘制水平线表示摩尔分数
+					ref_line, = ax.plot(temp_range, [mole_fraction] * len(temp_range),
+					                    'k--', linewidth=1.5, alpha=0.7,
+					                    label=f"摩尔分数 X{solute}={mole_fraction:.4f}")
+					plots.append(ref_line)
+					labels.append(f"摩尔分数 X{solute}={mole_fraction:.4f}")
+					
+					# 添加说明文本
+					ax.text(max_temp - (max_temp - min_temp) * 0.2, mole_fraction * 1.1,
+					        f"X{solute}={mole_fraction:.4f}",
+					        fontsize=9, color='black', ha='right', va='bottom',
+					        bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=2))
+			
+			elif property_type == "activity_coefficient":
+				# 为活度系数添加理想态线 (γ = 1)
+				ref_line, = ax.plot(temp_range, [1.0] * len(temp_range),
+				                    'k--', linewidth=1.5, alpha=0.7,
+				                    label="理想态 (γ = 1)")
+				plots.append(ref_line)
+				labels.append("理想态 (γ = 1)")
+				
+				# 添加说明文本
+				ax.text(max_temp - (max_temp - min_temp) * 0.2, 1.05,
+				        "理想态 (γ = 1)",
+				        fontsize=9, color='black', ha='right', va='bottom',
+				        bbox=dict(facecolor='white', alpha=0.7, edgecolor='none', pad=2))
+		
 		# 构建标题
 		solute = self.current_parameters["solute"]
+		
 		matrix_input = self.current_parameters["base_matrix"]
-		phase_dict = {"S": "固态", "L": "液态"}
-		phase_text = phase_dict.get(self.current_parameters["phase_state"], "固态")
-		order_dict = {"SS": "固溶体", "AMP": "非晶态", "IM": "金属间化合物"}
-		order_text = order_dict.get(self.current_parameters["order_degree"], "固溶体")
-		geo_model = self.current_parameters["geo_model"]
+		phase_dict = {"S": "Solid", "L": "Liquid"}
+		phase_text = phase_dict.get(self.current_parameters["phase_state"], "Solid")
+		order_text = self.current_parameters["order_degree"]
 		solvent = self.current_parameters["solvent"]
 		
 		# 设置标题和标签
 		if property_type == "activity":
-			y_label = f"{solute}的活度 ($a_{{{solute}}}$)"
-			title_property = f"{solute}活度"
+			y_label = f"Activity ($a_{{{solute}}}$)"
+			title_property = "Activity"
+			# 调整Y轴范围，使参考线更加明显
+			ax.set_ylim([0, max(ax.get_ylim()[1], 1.2)])  # 确保参考线可见
 		else:  # activity_coefficient
-			y_label = f"{solute}的活度系数 ($\\ln\\gamma_{{{solute}}}$)"
-			title_property = f"{solute}活度系数"
+			y_label = fr"Activity Coefficient ($\gamma_{{{solute}}}$)"
+			title_property = "Activity Coefficient"
+			# 确保理想态线可见
+			ymin, ymax = ax.get_ylim()
+			if ymin > 0.5:
+				ymin = 0.5
+			if ymax < 1.5:
+				ymax = 1.5
+			ax.set_ylim([ymin, ymax])
 		
 		# 设置坐标轴标签
-		ax.set_xlabel("温度 (K)", fontsize=12)
+		ax.set_xlabel("Temperature (K)", fontsize=12)
 		ax.set_ylabel(y_label, fontsize=12)
+		ymin, ymax = ax.get_ylim()
+		data_min = float('inf')
+		data_max = float('-inf')
 		
-		title = f"{title_property}随温度变化曲线\n" \
-		        f"合金: {matrix_input}  (溶剂: {solvent})\n" \
-		        f"相态: {phase_text}  |  类型: {order_text}  |  外推模型: {geo_model}"
-		ax.set_title(title, fontsize=13, pad=10, fontweight='bold')
+		# 找出所有数据的最小值和最大值
+		for _, data in model_results.items():
+			if "values" in data and len(data["values"]) > 0:
+				valid_values = data["values"][~np.isnan(data["values"])]
+				if len(valid_values) > 0:
+					data_min = min(data_min, np.min(valid_values))
+					data_max = max(data_max, np.max(valid_values))
 		
-		# 美化坐标轴
-		ax.tick_params(axis='both', which='major', labelsize=10)
-		ax.spines['top'].set_visible(False)
-		ax.spines['right'].set_visible(False)
+		# 确保y轴不会太贴近数据
+		if data_min != float('inf') and data_max != float('-inf'):
+			margin = (data_max - data_min) * 0.15  # 15%的边距
+			
+			if property_type == "activity":
+				# 对于活度，确保0可见
+				new_ymin = max(0, data_min - margin)
+				new_ymax = data_max + margin
+				
+				# 确保摩尔分数参考线可见
+				if "solute" in self.current_parameters:
+					solute = self.current_parameters["solute"]
+					composition = self.parse_composition(self.current_parameters["base_matrix"])
+					if solute in composition:
+						mole_fraction = composition[solute]
+						new_ymax = max(new_ymax, mole_fraction * 1.2)
+			
+			else:  # activity_coefficient
+				# 对于活度系数，确保理想态线(γ=1)可见
+				new_ymin = min(data_min - margin, 0.7)  # 确保能看到γ=1以下的区域
+				new_ymax = max(data_max + margin, 1.3)  # 确保能看到γ=1以上的区域
+			
+			# 保证一定的最小可视范围
+			if new_ymax - new_ymin < 0.1:
+				mean = (new_ymax + new_ymin) / 2
+				new_ymin = mean - 0.05
+				new_ymax = mean + 0.05
+			
+			# 应用新的y轴范围
+			ax.set_ylim(new_ymin, new_ymax)
+			
+		title = f"{title_property} of {solute} vs Temperature\n" \
+		        f"Alloy: {matrix_input} (Solvent: {solvent})\n" \
+		        f"Phase: {phase_text}, Type: {order_text}"
+		ax.set_title(title, fontsize=12, pad=10)
 		
 		# 添加网格
 		ax.grid(True, linestyle='--', alpha=0.7)
+		
+		# 设置坐标轴刻度字体大小
+		ax.tick_params(axis='both', which='major', labelsize=10)
 		
 		# 设置科学计数法格式
 		def scientific_formatter (x, pos):
@@ -1476,18 +1340,12 @@ class ActivityTemperatureVariationWidget(QWidget):
 		
 		# 添加交互式图例
 		if plots:
-			# 创建图例
-			legend = self.figure.legend(plots, labels,
-			                            loc='upper center',
+			# 在图表下方创建图例
+			legend = self.figure.legend(plots, labels, loc='upper center',
 			                            bbox_to_anchor=(0.5, 0.98),
-			                            ncol=min(3, len(plots)),
-			                            fontsize=10,
-			                            frameon=True,
-			                            fancybox=True,
-			                            framealpha=0.8,
-			                            shadow=True)
+			                            ncol=min(3, len(plots)), fontsize=10)
 			
-			# 清除已有的图例事件连接
+			# 使图例可选择
 			if hasattr(self, 'legend_cids'):
 				for cid in self.legend_cids:
 					self.canvas.mpl_disconnect(cid)
@@ -1519,160 +1377,14 @@ class ActivityTemperatureVariationWidget(QWidget):
 			self.legend_cids.append(cid)
 			
 			# 添加提示标签
-			self.figure.text(0.5, 0.01, "点击图例可切换显示/隐藏对应模型的结果",
-			                 ha='center', fontsize=9, style='italic', color='#7F8C8D')
+			self.figure.text(0.5, 0.01, "点击图例项目可切换显示/隐藏对应模型的结果",
+			                 ha='center', fontsize=9, style='italic')
 		
 		# 调整布局
-		self.figure.tight_layout(rect=[0, 0, 1, 0.95])
+		self.figure.tight_layout(rect=[0, 0, 1, 0.88])
 		
 		# 绘制画布
 		self.canvas.draw()
-	
-	def save_current_result (self):
-		"""保存当前计算结果到历史记录"""
-		if not self.has_calculated:
-			QMessageBox.warning(self, "保存错误", "请先计算数据再保存")
-			return
-		
-		# 创建时间戳
-		timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-		
-		# 保存标题信息
-		title = f"{self.current_parameters['solute']} in {self.current_parameters['base_matrix']} ({timestamp})"
-		
-		# 保存计算结果
-		self.calculation_history[title] = {
-			"parameters": self.current_parameters.copy(),
-			"results": {
-				"activity": {},
-				"activity_coefficient": {}
-			}
-		}
-		
-		# 复制计算结果（深拷贝）
-		for prop in ["activity", "activity_coefficient"]:
-			for model_key, data in self.calculation_results[prop].items():
-				self.calculation_history[title]["results"][prop][model_key] = {
-					"temperatures": data["temperatures"].copy() if isinstance(data["temperatures"], np.ndarray) else
-					data["temperatures"],
-					"values": data["values"].copy() if isinstance(data["values"], np.ndarray) else data["values"]
-				}
-		
-		# 更新历史下拉菜单
-		self.update_history_dropdown()
-		
-		QMessageBox.information(self, "保存成功", "当前计算结果已保存到历史记录")
-	
-	def update_history_dropdown (self):
-		"""更新历史记录下拉菜单"""
-		# 暂时阻止信号触发
-		self.history_combo.blockSignals(True)
-		
-		# 保存当前选中项
-		current_text = self.history_combo.currentText()
-		
-		# 清空下拉菜单
-		self.history_combo.clear()
-		
-		# 添加历史记录
-		if not self.calculation_history:
-			self.history_combo.addItem("无历史记录")
-		else:
-			self.history_combo.addItem("当前计算结果")
-			
-			# 按时间顺序添加历史记录（最新的在前面）
-			for title in reversed(list(self.calculation_history.keys())):
-				self.history_combo.addItem(title)
-		
-		# 恢复之前选中的项
-		if current_text and self.history_combo.findText(current_text) >= 0:
-			self.history_combo.setCurrentText(current_text)
-		else:
-			self.history_combo.setCurrentIndex(0)
-		
-		# 恢复信号连接
-		self.history_combo.blockSignals(False)
-	
-	def load_history_item (self, index):
-		"""加载历史记录项"""
-		if index == 0 or not self.has_calculated:
-			# 当前计算结果或无历史记录
-			return
-		
-		# 获取选中的历史记录标题
-		title = self.history_combo.currentText()
-		
-		if title not in self.calculation_history:
-			return
-		
-		# 加载历史记录
-		history_data = self.calculation_history[title]
-		
-		# 恢复参数
-		self.current_parameters = history_data["parameters"].copy()
-		
-		# 恢复计算结果
-		self.calculation_results = {
-			"activity": {},
-			"activity_coefficient": {}
-		}
-		
-		for prop in ["activity", "activity_coefficient"]:
-			for model_key, data in history_data["results"][prop].items():
-				self.calculation_results[prop][model_key] = {
-					"temperatures": data["temperatures"].copy() if isinstance(data["temperatures"], np.ndarray) else
-					data["temperatures"],
-					"values": data["values"].copy() if isinstance(data["values"], np.ndarray) else data["values"]
-				}
-		
-		# 更新UI
-		self.update_parameters_ui()
-		self.update_plot()
-		self.update_results_table()
-	
-	def update_parameters_ui (self):
-		"""更新UI以显示当前参数"""
-		# 更新合金组成输入
-		self.matrix_input.setText(self.current_parameters["base_matrix"])
-		
-		# 更新下拉菜单
-		self.update_element_dropdowns()
-		
-		# 设置溶质和溶剂元素
-		solute_index = self.solute_combo.findText(self.current_parameters["solute"])
-		if solute_index >= 0:
-			self.solute_combo.setCurrentIndex(solute_index)
-		
-		solvent_index = self.solvent_combo.findText(self.current_parameters["solvent"])
-		if solvent_index >= 0:
-			self.solvent_combo.setCurrentIndex(solvent_index)
-		
-		# 设置相态
-		phase_index = 0 if self.current_parameters["phase_state"] == "S" else 1
-		self.phase_combo.setCurrentIndex(phase_index)
-		
-		# 设置有序度
-		order_map = {"SS": 0, "AMP": 1, "IM": 2}
-		order_index = order_map.get(self.current_parameters["order_degree"], 0)
-		self.order_combo.setCurrentIndex(order_index)
-		
-		# 设置外推模型
-		geo_index = self.geo_model_combo.findText(self.current_parameters["geo_model"])
-		if geo_index >= 0:
-			self.geo_model_combo.setCurrentIndex(geo_index)
-	
-	def clear_history (self):
-		"""清除历史记录"""
-		if not self.calculation_history:
-			return
-		
-		reply = QMessageBox.question(self, "确认清除", "确定要清除所有历史记录吗？",
-		                             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-		
-		if reply == QMessageBox.Yes:
-			self.calculation_history.clear()
-			self.update_history_dropdown()
-			QMessageBox.information(self, "清除成功", "历史记录已清除")
 	
 	def export_data (self):
 		"""导出计算数据到CSV或Excel文件"""
@@ -1738,8 +1450,8 @@ class ActivityTemperatureVariationWidget(QWidget):
 			header = ['温度 (K)']
 			for model in all_models:
 				header.extend([
-					f'{model}-活度 (a_{self.current_parameters["solute"]})',
-					f'{model}-活度系数 (lnγ_{self.current_parameters["solute"]})'
+					f'{model}-activity',
+					f'{model}-activity coefficient'
 				])
 			writer.writerow(header)
 			
@@ -1866,11 +1578,8 @@ class ActivityTemperatureVariationWidget(QWidget):
 		worksheet.write(row, 0, '温度 (K)', header_format)
 		col = 1
 		for model in all_models:
-			worksheet.write(row, col, f'{model}-活度 (a_{self.current_parameters["solute"]})',
-			                header_format)
-			worksheet.write(row, col + 1,
-			                f'{model}-活度系数 (lnγ_{self.current_parameters["solute"]})',
-			                header_format)
+			worksheet.write(row, col, f'{model}-活度', header_format)
+			worksheet.write(row, col + 1, f'{model}-活度系数', header_format)
 			col += 2
 		
 		# 写入数据行
