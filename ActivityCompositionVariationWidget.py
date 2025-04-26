@@ -94,8 +94,9 @@ class ActivityCompositionVariationWidget(QWidget):
 		
 		# 目标元素和变化元素选择
 		element_layout = QGridLayout()
-		element_layout.setSpacing(10)
-		
+		element_layout.setSpacing(5)
+		element_layout.setColumnStretch(0,1)
+		element_layout.setColumnStretch(1,2)
 		self.target_element_combo = QComboBox()
 		self.target_element_combo.setMinimumHeight(30)
 		
@@ -204,7 +205,7 @@ class ActivityCompositionVariationWidget(QWidget):
 		self.property_combo = QComboBox()
 		self.property_combo.addItems([
 			"活度 (a)",
-			"活度系数 (γ)"
+			"活度系数 (lnγ)"
 		])
 		self.property_combo.setMinimumHeight(30)
 		
@@ -217,7 +218,8 @@ class ActivityCompositionVariationWidget(QWidget):
 		# 外推模型选择
 		self.geo_model_combo = QComboBox()
 		self.geo_model_combo.addItems(["UEM1", "UEM2_N", "GSM", "T-K", "K", "M"])
-		self.geo_model_combo.setMinimumHeight(30)
+		self.geo_model_combo.setMinimumHeight(25)
+		self.geo_model_combo.setFont(QFont("Arial", 9))
 		params_layout.addRow("外推模型:", self.geo_model_combo)
 		
 		params_group.setLayout(params_layout)
@@ -225,9 +227,13 @@ class ActivityCompositionVariationWidget(QWidget):
 		
 		# 外推模型选择
 		models_group = QGroupBox("外推模型选择")
-		models_layout = QVBoxLayout()
-		models_layout.setSpacing(10)
-		models_layout.setContentsMargins(15, 25, 15, 15)
+		models_group.setMinimumHeight(100)
+		models_layout =QGridLayout()
+		
+		models_layout.setSpacing(5)
+		models_layout.setVerticalSpacing(2)
+		models_layout.setContentsMargins(10, 5, 10, 5)
+		
 		
 		self.model_checkboxes = {}
 		models = [
@@ -239,13 +245,17 @@ class ActivityCompositionVariationWidget(QWidget):
 			("UEM2_N", "UEM2_N")
 		]
 		
-		for name, key in models:
+		
+		for index, (name, key)  in enumerate(models):
 			checkbox = QCheckBox(name)
-			checkbox.setMinimumHeight(25)
+			checkbox.setMinimumHeight(15)
 			if key in ["UEM1", "GSM"]:  # 默认选中一些模型
 				checkbox.setChecked(True)
 			self.model_checkboxes[key] = checkbox
-			models_layout.addWidget(checkbox)
+			row = index // 2  # 每行两个控件，使用整除来确定行
+			col = index % 2  # 每行两个控件，取余来确定列
+			models_layout.addWidget(checkbox, row, col)
+			
 		
 		models_group.setLayout(models_layout)
 		left_layout.addWidget(models_group)
@@ -354,13 +364,13 @@ class ActivityCompositionVariationWidget(QWidget):
 		# 复选框样式
 		checkbox_style = """
             QCheckBox {
-                font-size: 11pt;
+                font-size: 14pt;
                 spacing: 8px;
                 min-height: 22px;
             }
             QCheckBox::indicator {
-                width: 18px;
-                height: 18px;
+                width: 25px;
+                height: 25px;
             }
         """
 		
@@ -598,12 +608,18 @@ class ActivityCompositionVariationWidget(QWidget):
 					new_comp = {}
 					# 固定目标元素浓度
 					new_comp[target_element] = target_conc
-					new_comp[var_element] = x
-					total_others = target_conc + x
+					
+					# 固定溶剂浓度（可以根据需要设定）
+					new_comp[solvent] = 1.0 - (target_conc + x)
+					# 保持其他元素的浓度不变
+					for element, ratio in base_matrix.items():
+						if element != target_element and element != solvent:
+							new_comp[element] = ratio
+					total_others = target_conc + x + sum(new_comp.get(e, 0) for e in base_matrix if e not in [target_element, solvent])
 					if total_others >= 1.0:
 						# 处理无法计算的情况
 						continue
-					new_comp[solvent] = 1.0 - total_others
+					
 					
 					# 归一化组成确保总和为1
 					total = sum(new_comp.values())
@@ -771,18 +787,7 @@ class ActivityCompositionVariationWidget(QWidget):
 			plots.append(line)
 			labels.append(self.model_checkboxes[model_key].text())
 		
-		# 设置标题和标签
-		if property_type == "activity":
-			y_label = "Activity (a)"
-			title_property = "Activity"
-		else:  # activity_coefficient
-			y_label = "Activity Coefficient (γ)"
-			title_property = "Activity Coefficient"
 		
-		# 设置X轴标签
-		var_element = self.current_parameters["var_element"]
-		ax.set_xlabel(f"{var_element} Mole Fraction (x)", fontsize=12)
-		ax.set_ylabel(y_label, fontsize=12)
 		
 		# 构建标题
 		target_element = self.current_parameters["target_element"]
@@ -793,6 +798,19 @@ class ActivityCompositionVariationWidget(QWidget):
 		order_text = self.current_parameters["order_degree"]
 		geo_model = self.current_parameters["geo_model"]
 		solvent = self.current_parameters["solvent"]
+		
+		# 设置标题和标签
+		if property_type == "activity":
+			y_label = f"Activity ($a_{{{target_element}}}$)"
+			title_property = "Activity"
+		else:  # activity_coefficient
+			y_label = f"Activity Coefficient ($lnγ_{{{target_element}}}$)"
+			title_property = "Activity Coefficient"
+		
+		# 设置X轴标签
+		var_element = self.current_parameters["var_element"]
+		ax.set_xlabel(f"{var_element} Mole Fraction (x)", fontsize=12)
+		ax.set_ylabel(y_label, fontsize=12)
 		
 		title = f"{title_property} of {target_element} in {matrix_input}\n" \
 		        f"Variable: {var_element}, Solvent: {solvent}, T: {temperature}K\n" \
@@ -882,8 +900,8 @@ class ActivityCompositionVariationWidget(QWidget):
 			header = [f'{self.current_parameters["var_element"]} 浓度']
 			for model in all_models:
 				header.extend([
-					f'{model}-活度 (a)',
-					f'{model}-活度系数 (γ)'
+					f'{model}-活度 ($a_{{{self.current_parameters["target_element"]}}}$)',
+					f'{model}-活度系数 ($lnγ_{{{self.current_parameters["target_element"]}}}$)'
 				])
 			writer.writerow(header)
 			
@@ -982,8 +1000,8 @@ class ActivityCompositionVariationWidget(QWidget):
 		worksheet.write(row, 0, f'{self.current_parameters["var_element"]} 浓度', header_format)
 		col = 1
 		for model in all_models:
-			worksheet.write(row, col, f'{model}-活度 (a)', header_format)
-			worksheet.write(row, col + 1, f'{model}-活度系数 (γ)', header_format)
+			worksheet.write(row, col, f'{model}-活度 ($a_{{{self.current_parameters["target_element"]}}}$)', header_format)
+			worksheet.write(row, col + 1, f'{model}-活度系数 ($lnγ_{{{self.current_parameters["target_element"]}}}$)', header_format)
 			col += 2
 		
 		# 写入数据行

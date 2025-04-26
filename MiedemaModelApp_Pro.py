@@ -22,6 +22,7 @@ import BinarySys as BinaryModel
 import UnifiedExtrapolationModel as UEM
 from ActivityCoefficientWidget import ActivityCoefficientWidget
 from ActivityCompositionVariationWidget import ActivityCompositionVariationWidget
+from ActivityTemperatureVariationWidget import ActivityTemperatureVariationWidget
 
 # Define the contribution model function type
 ContributionModelFunc = Callable[[str, str, str, float, str, str], float]
@@ -2398,7 +2399,7 @@ class MiedemaModelUI(QMainWindow):
 	def init_ui (self):
 		"""Initialize the UI components"""
 		self.setWindowTitle("Multi-Component Miedema Model Calculator Pro")
-		self.setGeometry(100, 100, 1200, 800)
+		self.setGeometry(100, 100, 1200, 700)
 		
 		# Set global font size
 		app_font = QFont()
@@ -2536,15 +2537,18 @@ class MiedemaModelUI(QMainWindow):
 		# Tab 5: Activity Composition Variation
 		self.activity_comp_variation_widget = ActivityCompositionVariationWidget(self)
 		
+		# Tab 5: Activity Composition Variation
+		self.activity_tem_variation_widget = ActivityTemperatureVariationWidget(self)
+		
 		# Add tabs to main tab widget
 		main_tabs.addTab(single_calc_widget, "Single Calculation")
 		main_tabs.addTab(self.comp_variation_widget, "Composition Variation")
 		
 		
-		main_tabs.addTab(self.temp_variation_widget, "Temperature Variation")
-		main_tabs.addTab(self.activity_widget, "Activity & Activity Coefficient")
-		main_tabs.addTab(self.activity_comp_variation_widget, "Activity vs Composition")
-		
+		main_tabs.addTab(self.temp_variation_widget, f"Temperature Variation")
+		main_tabs.addTab(self.activity_widget, f"Activity / Activity Coefficient")
+		main_tabs.addTab(self.activity_comp_variation_widget, f"Activity vs Composition")
+		main_tabs.addTab(self.activity_tem_variation_widget,f"Activity vs Temperature")
 		# Connect tab change signal
 		main_tabs.currentChanged.connect(self.on_tab_changed)
 		

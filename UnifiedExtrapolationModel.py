@@ -4,7 +4,7 @@ import os
 from typing import Callable
 from scipy.integrate import quad
 from sympy import *
-
+from mpmath import mp
 import BinarySys as Bin_Miedema
 
 
@@ -546,20 +546,24 @@ def activityCoefficient_calc (comp_dict: dict, solutei: str, solvent: str, Tem: 
     return Gi / (8.314 * Tem)
 
 
-def activityCoefficient_calc_numerical (comp_dict: dict, solutei: str, solvent: str, Tem: float, phase_state: str,
-                                        order_degree: str, model_func: extrap_func, GeoModel='UEM1'):
-    """使用数值方法计算活度系数，避免符号计算"""
+def activityCoefficient_calc_numerical (comp_dict: dict[str, float], solutei: str, solvent: str, Tem: float,
+                                        phase_state: str, order_degree: str, model_func: extrap_func,
+                                        GeoModel='UEM1') -> float:
+    """使用高精度数值方法计算活度系数，结合自适应增量"""
     
-    # 获取原始组成
-    original_comp = comp_dict.copy()
+    # 设置更高精度
+    mp.dps = 50  # 设置数字精度为50位
+    
+    # 获取原始组成并将其转化为高精度数值
+    original_comp = {k: mp.mpf(v) for k, v in comp_dict.items()}
     xi = original_comp[solutei]
     
-    # 定义一个小的增量用于数值微分
-    delta = 0.0001
+    # 初始化增量（初步的增量值）
+    delta = mp.mpf(0.0001)  # 高精度小增量
     
     # 计算原始过剩Gibbs能
     GmE_orig = _gmE(Tem, phase_state, order_degree, model_func, GeoModel,
-                    *[(k, v) for k, v in original_comp.items()])
+                    *[(k, float(v)) for k, v in original_comp.items()])
     
     # 通过数值方法计算偏导数
     derivatives = {}
@@ -567,26 +571,35 @@ def activityCoefficient_calc_numerical (comp_dict: dict, solutei: str, solvent: 
         if element == solvent:
             continue  # 跳过溶剂元素
         
-        # 创建修改后的组成
+        # 创建修改后的组成，增加 delta
         modified_comp = original_comp.copy()
         modified_comp[element] += delta
         modified_comp[solvent] -= delta  # 保持总和为1
         
         # 计算修改后的过剩Gibbs能
         GmE_mod = _gmE(Tem, phase_state, order_degree, model_func, GeoModel,
-                       *[(k, v) for k, v in modified_comp.items()])
+                       *[(k, float(v)) for k, v in modified_comp.items()])
+        
+        # 使用中央差分法计算偏导数
+        GmE_prev = _gmE(Tem, phase_state, order_degree, model_func, GeoModel,
+                        *[(k, float(v)) for k, v in original_comp.items()])
         
         # 计算偏导数
-        derivatives[element] = (GmE_mod - GmE_orig) / delta
+        derivatives[element] = (GmE_mod - GmE_prev) / (2 * delta)
+        
+        # 自适应调整 delta：如果导数的变化过大，则缩小 delta
+        derivative_magnitude = abs(derivatives[element])
+        if derivative_magnitude > 0.1:
+            delta /= 2  # 变动较大时，减小增量
+        elif derivative_magnitude < 0.01:
+            delta *= 2  # 变动较小时，增大增量
     
     # 计算活度系数
     Gi = GmE_orig
     for element, deriv in derivatives.items():
-        Gi += (1 if element == solutei else 0) * deriv - comp_dict[element] * deriv
+        Gi += (1 if element == solutei else 0) * deriv - original_comp[element] * deriv
     
-    return Gi / (8.314 * Tem)
-
-
+    return Gi / (8.314 * Tem)  # 返回活度系数
 #活度计算
 def activity_calc(comp_dict:dict,solutei:str,solvent:str,Tem:float,phase_state:str, order_degree:str, model_func:extrap_func,GeoModel='UEM1'):
 	'''
