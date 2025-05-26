@@ -1,6 +1,8 @@
 import os
 import sqlite3 as sq
 import time
+
+
 class Element:
 	'''Element class for storing element properties'''
 	
@@ -62,7 +64,7 @@ class Element:
 class Binary:
 	'''Binary system class for storing binary system composition from extrapolation model'''
 	
-	def __init__ (self, A: str, B: str,phase_state: str, order_degree='IM'):
+	def __init__ (self, A: str, B: str, phase_state: str, order_degree='IM'):
 		'''Initialize binary system
 		
 		Args:
@@ -81,7 +83,7 @@ class Binary:
 			self.alpha = 0.73
 		else:
 			raise ValueError(f"Invalid phase_state: {phase_state}. Must be 'S' or 'L'.")
-			# Set lambda based on order degree
+		# Set lambda based on order degree
 		if order_degree == 'SS':
 			self.lammda = 0.0
 		elif order_degree == 'AMP':
@@ -101,12 +103,11 @@ class Binary:
 		total = xA + xB
 		self.xA = xA / total
 		self.xB = xB / total
-		
-	def set_T (self, Tem:float):
+	
+	def set_T (self, Tem: float):
 		self.Tem = Tem
-
-
-	def _V_in_alloy (self,  xA:float, xB:float):
+	
+	def _V_in_alloy (self, xA: float, xB: float):
 		'''Calculate volume of elements in alloy
 		
 		Args:
@@ -121,7 +122,6 @@ class Binary:
 		max_time = 10.0
 		A = self.A
 		B = self.B
-		
 		
 		V1a, V2a = A.V, B.V
 		
@@ -161,9 +161,8 @@ class Binary:
 			print("Warning: Volume calculation did not converge within maximum iterations.")
 		
 		return V1a, V2a
-
-
-	def getEnthalpy_byMiedema_Model (self,xA: float, xB: float):
+	
+	def getEnthalpy_byMiedema_Model (self, xA: float, xB: float):
 		'''Calculate enthalpy of formation using Miedema model
 		
 		Args:
@@ -181,7 +180,6 @@ class Binary:
 			element_B = self.B
 		except Exception as e:
 			raise Exception(f"Error initializing elements: {str(e)}")
-		
 		
 		# Normalize mole fractions
 		total = xA + xB
@@ -224,9 +222,8 @@ class Binary:
 		total_enthalpy = fC * df + dH_trans
 		
 		return total_enthalpy
-
-
-	def _get_excess_entropy (self,xA: float, xB: float):
+	
+	def _get_excess_entropy (self, xA: float, xB: float):
 		'''Calculate excess entropy using Tanaka excess entropy relation
 		
 		Args:
@@ -253,9 +250,8 @@ class Binary:
 			excess_entropy = 1.0 / 15.1 * (1.0 / element_A.Tm + 1.0 / element_B.Tm) * Hmix
 		
 		return excess_entropy
-
-
-	def get_excess_Gibbs (self,xA:float,xB:float):
+	
+	def get_excess_Gibbs (self, xA: float, xB: float):
 		'''Calculate excess Gibbs free energy of binary alloy
 		
 		Args:
@@ -275,7 +271,8 @@ class Binary:
 		g_E = enthalpy - self.Tem * entropy
 		
 		return g_E
-	def d_fun10(self):
+	
+	def d_fun10 (self):
 		'''Calculate partial molar excess Gibbs free energy of A
 		 in A-B binary alloy at temperature Tem under dilution
 		 lnγ_A
@@ -297,8 +294,6 @@ class Binary:
 		else:
 			dH_trans = B.dHtrans
 			entropy_contri_factor = 1.0 / 15.2 * (1.0 / A.Tm + 1.0 / B.Tm)
-		
-		
 		
 		# Calculate hybridization contribution
 		r_to_p = 0.0

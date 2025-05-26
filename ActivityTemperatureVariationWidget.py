@@ -984,7 +984,7 @@ class ActivityTemperatureVariationWidget(QWidget):
 					# 计算活度
 					try:
 						progress.setLabelText(f"计算 {model_key} 模型在温度 {temp:.1f}K 下的活度...")
-						activity_value = UEM.activity_calc_numerical(
+						activity_value = UEM.calculate_activity(
 								base_matrix, solute, solvent, temp,
 								phase_state, order_degree, model_func, model_key
 						)
@@ -997,9 +997,10 @@ class ActivityTemperatureVariationWidget(QWidget):
 					# 计算活度系数
 					try:
 						progress.setLabelText(f"计算 {model_key} 模型在温度 {temp:.1f}K 下的活度系数...")
-						activity_coef_value = UEM.activityCoefficient_calc_numerical(
-								base_matrix, solute, solvent, temp,
-								phase_state, order_degree, model_func,model_key)
+						activity_coef_value = UEM.calculate_activity_coefficient(base_matrix, solute, solvent,
+						                                                                  temp, phase_state,
+						                                                                  order_degree, model_func,
+						                                                                  model_key)
 						activity_coef_value = math.exp(activity_coef_value)
 						activity_coef_text = f'<span class="success">{activity_coef_value:.6f}</span>'
 					except Exception as e:

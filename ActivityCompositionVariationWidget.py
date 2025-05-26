@@ -630,35 +630,25 @@ class ActivityCompositionVariationWidget(QWidget):
 					# 计算活度
 					try:
 						progress.setLabelText(f"计算 {model_key} 模型在组成 {var_element}={x:.3f} 下的活度...")
-						activity_value = UEM.activity_calc_numerical(
+						activity_value = UEM.calculate_activity(
 								new_comp, target_element, solvent, temperature,
 								phase_state, order_degree, model_func, geo_model
 						)
+						
 					except Exception as e:
 						print(f"计算组成 {new_comp} 的活度时出错: {str(e)}")
-						# 尝试使用数值方法
-						try:
-							# 这里可以添加数值方法的实现
-							activity_value = None  # 暂时设为None
-						except:
-							activity_value = None
+						
 					
 					# 计算活度系数
 					try:
 						progress.setLabelText(f"计算 {model_key} 模型在组成 {var_element}={x:.3f} 下的活度系数...")
-						activity_coef_value = UEM.activityCoefficient_calc_numerical(
-								new_comp, target_element, solvent, temperature,
-								phase_state, order_degree, model_func, geo_model
-						)
+						activity_coef_value = UEM.calculate_activity_coefficient(new_comp, target_element,
+						                                                                  solvent, temperature,
+						                                                                  phase_state, order_degree,
+						                                                                  model_func, geo_model)
 					except Exception as e:
 						print(f"计算组成 {new_comp} 的活度系数时出错: {str(e)}")
-						# 尝试使用数值方法
-						try:
-							# 这里可以添加数值方法的实现
-							activity_coef_value = None  # 暂时设为None
-						except:
-							activity_coef_value = None
-					
+						
 					# 只有当计算成功时才添加数据点
 					if activity_value is not None or activity_coef_value is not None:
 						valid_compositions.append(x)
