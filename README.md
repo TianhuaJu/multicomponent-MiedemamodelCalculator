@@ -41,7 +41,7 @@ Clone the repository:
 
 Bash
 
-git clone https://github.com/your-username/your-repository.git
+git clone [https://github.com/TianhuaJu/multicomponent-MiedemamodelCalculator.git](https://github.com/TianhuaJu/multicomponent-MiedemamodelCalculator.git)
 cd your-repository
 Create and activate a virtual environment (recommended):
 
