@@ -1,11 +1,11 @@
-# MiedemaModel.spec (Corrected for database path)
+# MiedemaModel.spec (Corrected)
 import os
 
 block_cipher = None
 
 a = Analysis(
-    ['MiedemamodelApp.py'],
-    # 确保 PyInstaller 能找到您的 GUI, core, utils 等自定义模块
+    ['MiedemaModelApp_Pro.py'],
+    # 确保 PyInstaller 能找到您的 GUI, core, utils 等模块
     pathex=[os.getcwd()],
     binaries=[],
     # 修正数据文件的源路径和目标路径
