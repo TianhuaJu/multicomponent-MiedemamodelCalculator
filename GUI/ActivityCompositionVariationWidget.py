@@ -159,7 +159,10 @@ class ActivityCompositionVariationWidget(QWidget):
 		
 		main_layout.addWidget(splitter)
 		self.update_element_dropdowns()
-	
+	def create_form_label (self, text,size = 12):
+		label = QLabel(text)
+		label.setFont(QFont("Microsoft YaHei", size))  # <--- 在这里统一设置标签字体
+		return label
 	def create_title_frame (self):
 		"""创建标题栏"""
 		frame = QFrame(
@@ -213,20 +216,20 @@ class ActivityCompositionVariationWidget(QWidget):
 		self.matrix_input = StyledLineEdit("Fe0.7Ni0.3")
 		self.matrix_input.setPlaceholderText("例如: Fe0.7Ni0.3")
 		update_btn = QPushButton("更新")
-		update_btn.setMinimumHeight(32);
+		update_btn.setMinimumHeight(32)
 		update_btn.setFixedWidth(60)
 		update_btn.clicked.connect(self.update_element_dropdowns)
 		input_row.addWidget(self.matrix_input);
 		input_row.addWidget(update_btn)
-		layout.addRow("基体合金:", input_row)
+		layout.addRow(self.create_form_label("基体合金:"), input_row)
 		
 		# 元素选择
 		self.solvent_combo = StyledComboBox()
 		self.target_element_combo = StyledComboBox()
 		self.var_element_combo = StyledComboBox()
-		layout.addRow("溶剂元素:", self.solvent_combo)
-		layout.addRow("目标元素:", self.target_element_combo)
-		layout.addRow("变化元素:", self.var_element_combo)
+		layout.addRow(self.create_form_label("溶剂元素:"), self.solvent_combo)
+		layout.addRow(self.create_form_label("目标元素:"), self.target_element_combo)
+		layout.addRow(self.create_form_label("变化元素:"), self.var_element_combo)
 		
 		# 组成范围
 		range_widget = QWidget()
@@ -242,13 +245,13 @@ class ActivityCompositionVariationWidget(QWidget):
 		self.step_comp = StyledSpinBox();
 		self.step_comp.setRange(0.01, 0.2);
 		self.step_comp.setValue(0.05)
-		range_layout.addWidget(QLabel("min:"), 0, 0);
+		range_layout.addWidget(self.create_form_label("min:",10), 0, 0);
 		range_layout.addWidget(self.min_comp, 0, 1)
-		range_layout.addWidget(QLabel("max:"), 0, 2);
+		range_layout.addWidget(self.create_form_label("max:",10), 0, 2);
 		range_layout.addWidget(self.max_comp, 0, 3)
-		range_layout.addWidget(QLabel("step:"), 1, 0);
+		range_layout.addWidget(self.create_form_label("step:",10), 1, 0);
 		range_layout.addWidget(self.step_comp, 1, 1)
-		layout.addRow("变化范围:", range_widget)
+		layout.addRow(self.create_form_label("变化范围:"), range_widget)
 		
 		return group
 	
@@ -273,11 +276,11 @@ class ActivityCompositionVariationWidget(QWidget):
 		self.geo_model_combo = StyledComboBox();
 		self.geo_model_combo.addItems(["UEM1", "UEM2_N", "GSM", "T-K", "K", "M"])
 		
-		layout.addRow("固定温度:", self.temp_input)
-		layout.addRow("相态:", self.phase_combo)
-		layout.addRow("类型:", self.order_combo)
-		layout.addRow("几何模型:", self.geo_model_combo)
-		layout.addRow("绘图性质:", self.property_combo)
+		layout.addRow(self.create_form_label("固定温度:"), self.temp_input)
+		layout.addRow(self.create_form_label("相态:"), self.phase_combo)
+		layout.addRow(self.create_form_label("类型:"), self.order_combo)
+		layout.addRow(self.create_form_label("几何模型:"), self.geo_model_combo)
+		layout.addRow(self.create_form_label("计算性质:"), self.property_combo)
 		return group
 	
 	def create_model_selection_group (self):

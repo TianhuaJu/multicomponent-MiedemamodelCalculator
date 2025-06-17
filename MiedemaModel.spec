@@ -1,14 +1,20 @@
-# MiedemaModel.spec
+# MiedemaModel.spec (Corrected for database path)
+import os
+
 block_cipher = None
 
 a = Analysis(
     ['MiedemamodelApp.py'],
-    pathex=[],
+    # 确保 PyInstaller 能找到您的 GUI, core, utils 等自定义模块
+    pathex=[os.getcwd()],
     binaries=[],
-    datas=[('BinaryData', 'BinaryData'), # 包含数据库
-            ('app_icon.ico','.')],       #确保图标文件也被包含
-    hiddenimports=['PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWidgets', 
-                   'numpy', 'scipy', 'sqlite3', 'matplotlib'],
+    # 修正数据文件的源路径和目标路径
+    datas=[
+        ('core/BinaryData', 'core/BinaryData'),
+        ('app_icon.ico', '.')
+    ],
+    hiddenimports=['PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtWidgets',
+                   'numpy', 'scipy', 'sqlite3', 'matplotlib', 'PyQt5.sip'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -31,7 +37,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=False,  # 设置为False创建无控制台窗口的应用
+    console=False,
     icon='app_icon.ico',
 )
 
