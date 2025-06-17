@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Au-Ag:	0.5,	Au-Cu:	0.5	in	Ag-Cu
+Ag-Au:	0.5,	Ag-Cu:	0.5	in	Au-Cu
+Cu-Ag:	0.5,	Cu-Au:	0.5	in	Ag-Au

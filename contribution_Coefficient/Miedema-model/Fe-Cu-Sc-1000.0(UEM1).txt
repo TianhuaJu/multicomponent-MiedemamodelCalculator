@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Fe-Cu:	0.541,	Fe-Sc:	0.034	in	Cu-Sc
+Cu-Fe:	0.6,	Cu-Sc:	0.003	in	Fe-Sc
+Sc-Cu:	0.009,	Sc-Fe:	0.122	in	Cu-Fe

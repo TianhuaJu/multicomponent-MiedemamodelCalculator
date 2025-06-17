@@ -1,0 +1,7 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Fe-Cu:	0.577,	Fe-Si:	0.011	in	Cu-Si
+Cu-Fe:	0.592,	Cu-Si:	0.005	in	Fe-Si
+Si-Cu:	0.02,	Si-Fe:	0.044	in	Cu-Fe
+Fe-Cu:	0.577,	Fe-Si:	0.011	in	Cu-Si
+Cu-Fe:	0.592,	Cu-Si:	0.005	in	Fe-Si
+Si-Cu:	0.02,	Si-Fe:	0.044	in	Cu-Fe

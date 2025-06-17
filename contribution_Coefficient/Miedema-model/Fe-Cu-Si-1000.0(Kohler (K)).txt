@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Fe-Cu:	0,	Fe-Si:	0	in	Cu-Si
+Cu-Fe:	0,	Cu-Si:	0	in	Fe-Si
+Si-Cu:	0,	Si-Fe:	0	in	Cu-Fe

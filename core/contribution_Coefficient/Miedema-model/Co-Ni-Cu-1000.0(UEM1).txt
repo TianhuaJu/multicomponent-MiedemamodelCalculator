@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Co-Ni:	1.0,	Co-Cu:	0.0	in	Ni-Cu
+Ni-Co:	0.999,	Ni-Cu:	0.0	in	Co-Cu
+Cu-Ni:	0.562,	Cu-Co:	0.326	in	Ni-Co
