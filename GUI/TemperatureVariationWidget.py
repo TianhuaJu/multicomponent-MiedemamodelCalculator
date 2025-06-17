@@ -330,7 +330,7 @@ class TemperatureVariationWidget(QWidget):
 		layout.addWidget(plot_title)
 		
 		# matplotlib图形
-		self.figure = Figure(figsize=(10, 6), dpi=100, facecolor='white')
+		self.figure = Figure(figsize=(10, 8), dpi=100, facecolor='white')
 		self.canvas = FigureCanvas(self.figure)
 		
 		# 初始图形

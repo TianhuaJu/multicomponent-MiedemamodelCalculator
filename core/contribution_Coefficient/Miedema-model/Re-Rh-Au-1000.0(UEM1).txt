@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Re-Rh:	0.973,	Re-Au:	0.006	in	Rh-Au
+Rh-Re:	0.955,	Rh-Au:	0.022	in	Re-Au
+Au-Rh:	0.476,	Au-Re:	0.133	in	Rh-Re

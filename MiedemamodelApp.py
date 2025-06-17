@@ -35,7 +35,7 @@ class MiedemaModelUI(QMainWindow):
 	
 	def __init__ (self):
 		super().__init__()
-		self.init_ui()
+		
 		self.icon_path = resource_path("app_icon.ico")
 		self.init_ui()
 		self.setWindowIcon(QIcon(self.icon_path))

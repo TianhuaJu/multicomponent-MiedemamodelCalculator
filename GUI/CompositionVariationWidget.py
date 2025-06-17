@@ -445,7 +445,7 @@ class CompositionVariationWidget(QWidget):
         """)
 		right_layout.addWidget(plot_title)
 		
-		self.figure = Figure(figsize=(10, 6), dpi=100)
+		self.figure = Figure(figsize=(10, 8), dpi=100)
 		self.figure.patch.set_facecolor('white')
 		self.canvas = FigureCanvas(self.figure)
 		self.toolbar = NavigationToolbar(self.canvas, self)
