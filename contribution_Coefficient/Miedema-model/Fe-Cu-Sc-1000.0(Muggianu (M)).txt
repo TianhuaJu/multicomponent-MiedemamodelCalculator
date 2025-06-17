@@ -1,0 +1,7 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Fe-Cu:	0.5,	Fe-Sc:	0.5	in	Cu-Sc
+Cu-Fe:	0.5,	Cu-Sc:	0.5	in	Fe-Sc
+Sc-Cu:	0.5,	Sc-Fe:	0.5	in	Cu-Fe
+Fe-Cu:	0.5,	Fe-Sc:	0.5	in	Cu-Sc
+Cu-Fe:	0.5,	Cu-Sc:	0.5	in	Fe-Sc
+Sc-Cu:	0.5,	Sc-Fe:	0.5	in	Cu-Fe

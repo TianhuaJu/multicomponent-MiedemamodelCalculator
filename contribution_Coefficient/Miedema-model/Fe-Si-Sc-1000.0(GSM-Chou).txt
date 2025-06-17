@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Fe-Si:	0.467,	Fe-Sc:	0.533	in	Si-Sc
+Si-Fe:	0.113,	Si-Sc:	0.887	in	Fe-Sc
+Sc-Si:	0.873,	Sc-Fe:	0.127	in	Si-Fe

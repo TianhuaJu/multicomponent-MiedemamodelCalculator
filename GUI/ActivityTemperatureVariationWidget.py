@@ -14,11 +14,14 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
-import UnifiedExtrapolationModel as UEM
+from core import UnifiedExtrapolationModel as UEM
+from utils.tool import export_data_to_file
 
 
 class ActivityTemperatureVariationWidget(QWidget):
 	"""用于显示活度和活度系数随温度变化的窗口"""
+	
+	# 替换您类中从 __init__ 到 create_action_buttons 的所有方法
 	
 	def __init__ (self, parent=None):
 		super().__init__(parent)
@@ -26,513 +29,179 @@ class ActivityTemperatureVariationWidget(QWidget):
 		
 		# 配置matplotlib以支持中文显示
 		plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'SimSun']
-		plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+		plt.rcParams['axes.unicode_minus'] = False
 		
-		# 存储计算结果的数据结构
-		self.calculation_results = {
-			"activity": {},  # 活度数据
-			"activity_coefficient": {}  # 活度系数数据
-		}
-		
-		# 跟踪当前的计算参数，用于导出
-		self.current_parameters = {
-			"base_matrix": "",
-			"solute": "",
-			"solvent": "",
-			"phase_state": "",
-			"order_degree": "",
-			"temp_range": []
-		}
-		
-		self.has_calculated = False  # 跟踪是否已经计算
-		self.legend_cids = []  # 保存图例事件连接ID
-		
-		# 设置窗口标题和大小
-		self.setWindowTitle("热力学性质随温度变化计算器")
-		self.resize(1200, 800)
+		# 初始化数据结构
+		self.calculation_results = {"activity": {}, "activity_coefficient": {}}
+		self.current_parameters = {}
+		self.has_calculated = False
 		
 		# 初始化UI
 		self.init_ui()
 	
 	def init_ui (self):
-		"""初始化用户界面组件"""
-		# 设置整体字体
-		app_font = QFont("Microsoft YaHei", 10)
-		self.setFont(app_font)
+		"""初始化用户界面组件 (优化版)"""
+		self.setFont(QFont("Microsoft YaHei", 10))
+		main_layout = QHBoxLayout(self)  # 使用QHBoxLayout作为主布局
+		main_layout.setSpacing(15)
+		main_layout.setContentsMargins(15, 15, 15, 15)
 		
-		# 主布局
-		main_layout = QVBoxLayout()
-		main_layout.setSpacing(15)  # 增加布局元素之间的间距
-		main_layout.setContentsMargins(15, 15, 15, 15)  # 增加主布局边距
-		
-		# 创建分割器
 		splitter = QSplitter(Qt.Horizontal)
-		splitter.setHandleWidth(2)  # 设置分割线宽度
+		splitter.setHandleWidth(2)
 		
-		# 创建左侧控制面板
 		left_panel = self.create_left_panel()
+		right_panel = self.create_right_panel()  # 假设您有此方法创建右侧面板
 		
-		# 创建右侧面板（包括结果显示和图表）
-		right_panel = self.create_right_panel()
-		
-		# 添加面板到分割器
 		splitter.addWidget(left_panel)
 		splitter.addWidget(right_panel)
+		splitter.setSizes([420, 780])
 		
-		# 设置分割比例
-		splitter.setSizes([400, 800])
-		
-		# 添加分割器到主布局
 		main_layout.addWidget(splitter)
-		
-		# 设置窗口布局
-		self.setLayout(main_layout)
-		
-		# 更新元素下拉列表
 		self.update_element_dropdowns()
 	
 	def create_left_panel (self):
-		"""创建左侧控制面板"""
+		"""创建左侧控制面板 (优化版)"""
 		left_panel = QWidget()
-		left_panel.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+		left_layout = QVBoxLayout(left_panel)
+		left_layout.setSpacing(15)
+		left_layout.setContentsMargins(10, 10, 10, 10)
 		
-		# 使用垂直布局
-		left_layout = QVBoxLayout()
-		left_layout.setSpacing(20)  # 增加各组件之间的间距
-		left_layout.setContentsMargins(15, 15, 15, 15)
-		
-		# 添加标题
-		title_label = QLabel("合金热力学计算")
-		title_font = QFont("Microsoft YaHei", 15, QFont.Bold)  # 增大字体
-		title_label.setFont(title_font)
-		title_label.setAlignment(Qt.AlignCenter)
-		title_label.setStyleSheet("color: #2C3E50; margin-bottom: 10px;")
-		left_layout.addWidget(title_label)
-		
-		# 添加水平分隔线
-		separator = QFrame()
-		separator.setFrameShape(QFrame.HLine)
-		separator.setFrameShadow(QFrame.Sunken)
-		separator.setLineWidth(1)
-		separator.setStyleSheet("background-color: #BDC3C7;")
-		left_layout.addWidget(separator)
-		
-		# 1. 合金组成区域
+		# 依次添加各个设置区域
 		left_layout.addWidget(self.create_alloy_composition_group())
-		
-		# 2. 温度范围区域
 		left_layout.addWidget(self.create_temperature_range_group())
-		
-		# 3. 计算参数区域
 		left_layout.addWidget(self.create_calculation_params_group())
-		
-		# 4. 外推模型选择区域
 		left_layout.addWidget(self.create_model_selection_group())
-		
-		# 添加弹性空间
-		left_layout.addStretch(1)
-		
-		# 5. 操作按钮区域
+		left_layout.addStretch(1)  # 弹性空间将按钮推到底部
 		left_layout.addWidget(self.create_action_buttons())
 		
-		left_panel.setLayout(left_layout)
-		
-		# 设置最小宽度和固定最大宽度，以避免控制面板过宽
 		left_panel.setMinimumWidth(380)
 		left_panel.setMaximumWidth(450)
 		
 		return left_panel
 	
 	def create_alloy_composition_group (self):
-		"""创建合金组成区域"""
+		"""创建合金组成区域 (优化版)"""
 		group = QGroupBox("合金组成")
-		group_font = QFont("Microsoft YaHei", 13, QFont.Bold)  # 增大字体
-		group.setFont(group_font)
+		group.setFont(QFont("Microsoft YaHei", 11, QFont.Bold))
 		
-		group.setStyleSheet("""
-            QGroupBox {
-                font-weight: bold;
-                border: 1px solid #BDC3C7;
-                border-radius: 6px;
-                margin-top: 12px;
-                padding-top: 10px;
-                background-color: white;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                padding: 0 5px;
-                color: #2C3E50;
-            }
-        """)
-		
-		layout = QFormLayout()
-		layout.setSpacing(15)
-		layout.setContentsMargins(15, 20, 15, 15)
-		layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
+		layout = QFormLayout(group)
+		layout.setSpacing(10)
+		layout.setContentsMargins(10, 20, 10, 10)
+		layout.setLabelAlignment(Qt.AlignRight)
 		
 		# 合金组成输入行
-		comp_input_row = QHBoxLayout()
-		
 		self.matrix_input = QLineEdit()
 		self.matrix_input.setPlaceholderText("例如: Fe0.7Ni0.3")
-		self.matrix_input.setMinimumHeight(36)  # 增加高度
-		self.matrix_input.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		self.matrix_input.setStyleSheet("""
-            QLineEdit {
-                border: 1px solid #BDC3C7;
-                border-radius: 4px;
-                padding: 5px;
-                background-color: #F8F9F9;
-                font-size: 12pt;
-            }
-            QLineEdit:focus {
-                border: 1px solid #3498DB;
-                background-color: white;
-            }
-        """)
+		self.matrix_input.setMinimumHeight(32)  # 统一高度
+		self.matrix_input.setFont(QFont("Microsoft YaHei", 10))
 		
 		update_btn = QPushButton("更新")
-		update_btn.setFixedWidth(80)
-		update_btn.setMinimumHeight(36)  # 增加高度
-		update_btn.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		update_btn.setStyleSheet("""
-            QPushButton {
-                background-color: #3498DB;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                padding: 5px 15px;
-                font-size: 12pt;
-            }
-            QPushButton:hover {
-                background-color: #2980B9;
-            }
-            QPushButton:pressed {
-                background-color: #1F618D;
-            }
-        """)
+		update_btn.setFixedWidth(60)
+		update_btn.setMinimumHeight(32)  # 统一高度
+		update_btn.setFont(QFont("Microsoft YaHei", 10))
 		update_btn.clicked.connect(self.update_element_dropdowns)
 		
-		comp_input_row.addWidget(self.matrix_input)
-		comp_input_row.addWidget(update_btn)
+		input_row = QHBoxLayout()
+		input_row.addWidget(self.matrix_input)
+		input_row.addWidget(update_btn)
 		
-		label = self.create_label("合金组成:")
-		label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		layout.addRow(label, comp_input_row)
+		layout.addRow(self.create_label("合金组成:"), input_row)
 		
-		# 元素选择区域
-		element_layout = QGridLayout()
-		element_layout.setSpacing(10)
-		element_layout.setColumnStretch(0, 1)
-		element_layout.setColumnStretch(1, 2)
-		
-		# 溶剂元素下拉框
+		# 溶剂和溶质选择
 		self.solvent_combo = self.create_combo_box()
-		self.solvent_combo.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		
-		# 溶质元素下拉框
 		self.solute_combo = self.create_combo_box()
-		self.solute_combo.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		
-		# 添加到布局
-		solvent_label = self.create_label("溶剂元素:")
-		solvent_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		solute_label = self.create_label("溶质元素:")
-		solute_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		
-		element_layout.addWidget(solvent_label, 0, 0)
-		element_layout.addWidget(self.solvent_combo, 0, 1)
-		element_layout.addWidget(solute_label, 1, 0)
-		element_layout.addWidget(self.solute_combo, 1, 1)
-		
-		# 使用QWidget包装网格布局
-		element_widget = QWidget()
-		element_widget.setLayout(element_layout)
-		
-		element_label = self.create_label("元素选择:")
-		element_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		layout.addRow(element_label, element_widget)
-		
-		# 设置布局
-		group.setLayout(layout)
+		layout.addRow(self.create_label("溶剂元素:"), self.solvent_combo)
+		layout.addRow(self.create_label("溶质元素:"), self.solute_combo)
 		
 		return group
 	
 	def create_temperature_range_group (self):
-		"""创建温度范围设置区域"""
-		group = QGroupBox("Temperature")
-		group_font = QFont("Microsoft YaHei", 13, QFont.Bold)  # 增大字体
-		group.setFont(group_font)
+		"""创建温度范围设置区域 (优化版)"""
+		group = QGroupBox("温度范围")
+		group.setFont(QFont("Microsoft YaHei", 11, QFont.Bold))
+		layout = QFormLayout(group)
+		layout.setSpacing(10)
+		layout.setContentsMargins(10, 20, 10, 10)
 		
-		group.setStyleSheet("""
-            QGroupBox {
-                font-weight: bold;
-                border: 1px solid #BDC3C7;
-                border-radius: 6px;
-                margin-top: 12px;
-                padding-top: 10px;
-                background-color: white;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                padding: 0 5px;
-                color: #2C3E50;
-            }
-        """)
+		self.min_temp = self.create_spin_box(300, 5000, 800, 50, " K")
+		self.max_temp = self.create_spin_box(300, 5000, 1600, 50, " K")
+		self.step_temp = self.create_spin_box(10, 500, 50, 10, " K")
 		
-		layout = QGridLayout()
-		layout.setSpacing(15)
-		layout.setContentsMargins(15, 20, 15, 15)
-		
-		# 创建温度范围控件
-		self.min_temp = self.create_spin_box(300, 3000, 800, 50, " K")
-		self.min_temp.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		
-		self.max_temp = self.create_spin_box(300, 3000, 1600, 50, " K")
-		self.max_temp.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		
-		self.step_temp = self.create_spin_box(10, 200, 50, 10, " K")
-		self.step_temp.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		
-		# 添加标签
-		min_label = self.create_label("min:")
-		min_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		max_label = self.create_label("max:")
-		max_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		step_label = self.create_label("step:")
-		step_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		
-		# 添加组件到网格布局
-		layout.addWidget(min_label, 0, 0,Qt.AlignRight)
-		layout.addWidget(self.min_temp, 0, 1)
-		layout.addWidget(max_label, 1, 0,Qt.AlignRight)
-		layout.addWidget(self.max_temp, 1, 1)
-		layout.addWidget(step_label, 2, 0,Qt.AlignRight)
-		layout.addWidget(self.step_temp, 2, 1)
-		
-		# 设置布局
-		group.setLayout(layout)
+		layout.addRow(self.create_label("最低温度:"), self.min_temp)
+		layout.addRow(self.create_label("最高温度:"), self.max_temp)
+		layout.addRow(self.create_label("温度步长:"), self.step_temp)
 		
 		return group
 	
 	def create_calculation_params_group (self):
-		"""创建计算参数区域"""
+		"""创建计算参数区域 (优化版)"""
 		group = QGroupBox("计算参数")
-		group_font = QFont("Microsoft YaHei", 13, QFont.Bold)  # 增大字体
-		group.setFont(group_font)
+		group.setFont(QFont("Microsoft YaHei", 11, QFont.Bold))
+		layout = QFormLayout(group)
+		layout.setSpacing(10)
+		layout.setContentsMargins(10, 20, 10, 10)
 		
-		group.setStyleSheet("""
-            QGroupBox {
-                font-weight: bold;
-                border: 1px solid #BDC3C7;
-                border-radius: 6px;
-                margin-top: 12px;
-                padding-top: 10px;
-                background-color: white;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                padding: 0 5px;
-                color: #2C3E50;
-            }
-        """)
-		
-		layout = QFormLayout()
-		layout.setSpacing(15)
-		layout.setContentsMargins(15, 20, 15, 15)
-		layout.setFieldGrowthPolicy(QFormLayout.ExpandingFieldsGrow)
-		layout.setLabelAlignment(Qt.AlignRight)
-		layout.setFormAlignment(Qt.AlignRight)
-		fix_Width = 200
 		self.phase_combo = self.create_combo_box()
 		self.phase_combo.addItems(["固态 (S)", "液态 (L)"])
-		self.phase_combo.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		self.phase_combo.setMinimumWidth(fix_Width)
 		
-		phase_label = self.create_label("相态:")
-		phase_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		layout.addRow(phase_label, self.phase_combo)
-		
-		# 有序度选择
 		self.order_combo = self.create_combo_box()
 		self.order_combo.addItems(["固溶体 (SS)", "非晶态 (AMP)", "金属间化合物 (IM)"])
-		self.order_combo.setFont(QFont("Microsoft YaHei", 7))  # 增大字体
-		self.order_combo.setMinimumWidth(fix_Width)
-		order_label = self.create_label("类型:")
-		order_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		layout.addRow(order_label, self.order_combo)
 		
-		# 热力学性质选择
 		self.property_combo = self.create_combo_box()
-		self.property_combo.addItems([
-			"活度 (a)",
-			"活度系数 (γ)"
-		])
-		self.property_combo.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
+		self.property_combo.addItems(["活度 (a)", "活度系数 (γ)"])
 		self.property_combo.currentIndexChanged.connect(self.update_plot)
-		self.property_combo.setMinimumWidth(fix_Width)
-		self.property_combo.width()
-		property_label = self.create_label("热力学性质:")
-		property_label.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-		layout.addRow(property_label, self.property_combo)
 		
-		# 设置布局
-		group.setLayout(layout)
+		layout.addRow(self.create_label("相态:"), self.phase_combo)
+		layout.addRow(self.create_label("类型:"), self.order_combo)
+		layout.addRow(self.create_label("绘图性质:"), self.property_combo)
 		
 		return group
 	
 	def create_model_selection_group (self):
-		"""创建外推模型选择区域"""
+		"""创建外推模型选择区域 (优化版)"""
 		group = QGroupBox("外推模型选择")
-		group_font = QFont("Microsoft YaHei", 13, QFont.Bold)  # 增大字体
-		group.setFont(group_font)
+		group.setFont(QFont("Microsoft YaHei", 11, QFont.Bold))
+		layout = QGridLayout(group)
+		layout.setSpacing(10)
+		layout.setContentsMargins(10, 20, 10, 10)
 		
-		group.setStyleSheet("""
-            QGroupBox {
-                font-weight: bold;
-                border: 1px solid #BDC3C7;
-                border-radius: 6px;
-                margin-top: 12px;
-                padding-top: 10px;
-                background-color: white;
-            }
-            QGroupBox::title {
-                subcontrol-origin: margin;
-                subcontrol-position: top left;
-                padding: 0 5px;
-                color: #2C3E50;
-            }
-        """)
-		
-		layout = QGridLayout()
-		layout.setSpacing(15)
-		layout.setContentsMargins(15, 20, 15, 15)
-		
-		# 创建模型选择复选框
 		self.model_checkboxes = {}
-		models = [
-			("Kohler (K)", "K"),
-			("Muggianu (M)", "M"),
-			("Toop-Kohler (T-K)", "T-K"),
-			("GSM/Chou", "GSM"),
-			("UEM1", "UEM1"),
-			("UEM2_N", "UEM2_N")
-		]
-		
-		# 美化复选框样式
-		checkbox_style = """
-            QCheckBox {
-                spacing: 8px;
-                font-size: 12pt;
-            }
-            QCheckBox::indicator {
-                width: 20px;
-                height: 20px;
-            }
-            QCheckBox::indicator:unchecked {
-                border: 1px solid #BDC3C7;
-                background-color: white;
-                border-radius: 3px;
-            }
-            QCheckBox::indicator:checked {
-                border: 1px solid #3498DB;
-                background-color: #3498DB;
-                border-radius: 3px;
-            }
-        """
+		models = [("Kohler (K)", "K"), ("Muggianu (M)", "M"), ("Toop-Kohler (T-K)", "T-K"),
+		          ("GSM/Chou", "GSM"), ("UEM1", "UEM1"), ("UEM2_N", "UEM2_N")]
 		
 		for index, (name, key) in enumerate(models):
 			checkbox = QCheckBox(name)
-			checkbox.setMinimumHeight(30)  # 增加高度
-			checkbox.setFont(QFont("Microsoft YaHei", 12))  # 增大字体
-			checkbox.setStyleSheet(checkbox_style)
-			
-			if key in ["UEM1", "GSM"]:  # 默认选中一些模型
+			checkbox.setFont(QFont("Microsoft YaHei", 10))
+			if key in ["UEM1", "GSM"]:
 				checkbox.setChecked(True)
-			
 			self.model_checkboxes[key] = checkbox
-			
-			row = index // 2  # 每行两个控件
-			col = index % 2
-			layout.addWidget(checkbox, row, col)
-		
-		# 设置布局
-		group.setLayout(layout)
+			layout.addWidget(checkbox, index // 2, index % 2)
 		
 		return group
 	
 	def create_action_buttons (self):
-		"""创建操作按钮区域"""
-		frame = QFrame()
-		frame.setFrameShape(QFrame.StyledPanel)
-		frame.setStyleSheet("""
-            QFrame {
-                border: 1px solid #BDC3C7;
-                border-radius: 6px;
-                background-color: white;
-            }
-        """)
-		
-		layout = QHBoxLayout()
+		"""创建操作按钮区域 (优化版)"""
+		container = QWidget()
+		layout = QHBoxLayout(container)
 		layout.setSpacing(15)
-		layout.setContentsMargins(15, 15, 15, 15)
+		layout.setContentsMargins(0, 0, 0, 0)
 		
-		# 计算按钮
 		calculate_button = QPushButton("计算")
-		calculate_button.setMinimumHeight(45)  # 增加高度
-		calculate_button.setFont(QFont("Microsoft YaHei", 13, QFont.Bold))  # 增大字体
-		calculate_button.setStyleSheet("""
-            QPushButton {
-                background-color: #2ECC71;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                padding: 8px 15px;
-                font-weight: bold;
-                font-size: 13pt;
-            }
-            QPushButton:hover {
-                background-color: #27AE60;
-            }
-            QPushButton:pressed {
-                background-color: #1E8449;
-            }
-        """)
+		calculate_button.setMinimumHeight(40)  # 统一高度
+		calculate_button.setFont(QFont("Microsoft YaHei", 11, QFont.Bold))
 		calculate_button.clicked.connect(self.calculate_all_properties)
 		
-		# 导出按钮
 		export_button = QPushButton("导出数据")
-		export_button.setMinimumHeight(45)  # 增加高度
-		export_button.setFont(QFont("Microsoft YaHei", 13, QFont.Bold))  # 增大字体
-		export_button.setStyleSheet("""
-            QPushButton {
-                background-color: #3498DB;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                padding: 8px 15px;
-                font-weight: bold;
-                font-size: 13pt;
-            }
-            QPushButton:hover {
-                background-color: #2980B9;
-            }
-            QPushButton:pressed {
-                background-color: #1F618D;
-            }
-        """)
+		export_button.setMinimumHeight(40)  # 统一高度
+		export_button.setFont(QFont("Microsoft YaHei", 11, QFont.Bold))
 		export_button.clicked.connect(self.export_data)
 		
-		# 添加按钮到布局
-		layout.addWidget(calculate_button)
-		layout.addWidget(export_button)
+		layout.addWidget(calculate_button, 1)
+		layout.addWidget(export_button, 1)
 		
-		frame.setLayout(layout)
-		
-		return frame
+		return container
+	
+	
 	
 	def create_right_panel (self):
 		"""创建右侧面板（包括结果文本区域和图表）"""
@@ -1388,231 +1057,56 @@ class ActivityTemperatureVariationWidget(QWidget):
 		self.canvas.draw()
 	
 	def export_data (self):
-		"""导出计算数据到CSV或Excel文件"""
+		"""
+		准备数据并调用通用的导出函数。
+		"""
 		if not self.has_calculated:
-			QMessageBox.warning(self, "导出错误", "请先计算数据再导出")
+			QMessageBox.warning(self, "导出错误", "请先计算数据再导出。")
 			return
 		
-		# 获取保存文件路径
-		file_path, _ = QFileDialog.getSaveFileName(
-				self, "导出数据", "", "CSV文件 (*.csv);;Excel文件 (*.xlsx);;所有文件 (*.*)")
+		# 1. 准备 parameters 字典
+		params = self.current_parameters
+		parameters = {
+			'基体合金': params.get("base_matrix", ""),
+			'添加元素': params.get("add_element", ""),
+			'温度 (K)': params.get("temperature", 0),
+			'相态': "固态 (S)" if params.get("phase_state") == "S" else "液态 (L)",
+			'类型': params.get("order_degree", "")
+		}
 		
-		if not file_path:
-			return
-		
-		try:
-			# 根据文件扩展名决定导出格式
-			if file_path.lower().endswith('.xlsx'):
-				self.export_to_excel(file_path)
-			else:
-				# 默认导出为CSV
-				if not file_path.lower().endswith('.csv'):
-					file_path += '.csv'
-				self.export_to_csv(file_path)
-			
-			QMessageBox.information(self, "导出成功", f"数据已成功导出到: {file_path}")
-		except Exception as e:
-			QMessageBox.critical(self, "导出错误", f"导出数据时发生错误: {str(e)}")
-			traceback.print_exc()
-	
-	def export_to_csv (self, file_path):
-		"""导出数据到CSV格式"""
-		import csv
-		
-		# 获取所有模型和所有温度点
-		all_models = set()
-		all_temperatures = set()
-		
+		# 2. 准备 header 和 data
+		all_models = sorted(self.calculation_results["enthalpy"].keys())
+		all_compositions = set()
 		for prop_data in self.calculation_results.values():
-			for model_key, data in prop_data.items():
-				all_models.add(model_key)
-				if "temperatures" in data and len(data["temperatures"]) > 0:
-					all_temperatures.update(data["temperatures"])
+			for model_data in prop_data.values():
+				if "compositions" in model_data and model_data["compositions"].size > 0:
+					all_compositions.update(model_data["compositions"])
 		
-		# 排序温度点和模型名称
-		all_temperatures = sorted(all_temperatures)
-		all_models = sorted(all_models)
+		sorted_compositions = sorted(list(all_compositions))
 		
-		# 写入CSV文件
-		with open(file_path, 'w', newline='') as csvfile:
-			writer = csv.writer(csvfile)
-			
-			# 写入标题行 - 参数信息
-			writer.writerow(['计算参数'])
-			writer.writerow(['基体合金', self.current_parameters["base_matrix"]])
-			writer.writerow(['溶剂元素', self.current_parameters["solvent"]])
-			writer.writerow(['溶质元素', self.current_parameters["solute"]])
-			writer.writerow(['相态', "固态" if self.current_parameters["phase_state"] == "S" else "液态"])
-			writer.writerow(['类型', self.current_parameters["order_degree"]])
-			writer.writerow(['外推模型', self.current_parameters["geo_model"]])
-			writer.writerow([])  # 空行
-			
-			# 写入标题行 - 数据部分
-			header = ['温度 (K)']
-			for model in all_models:
-				header.extend([
-					f'{model}-activity',
-					f'{model}-activity coefficient'
-				])
-			writer.writerow(header)
-			
-			# 写入数据行
-			for temp in all_temperatures:
-				row = [temp]
-				for model in all_models:
-					# 活度
-					activity_value = ''
-					if model in self.calculation_results["activity"]:
-						data = self.calculation_results["activity"][model]
-						if "temperatures" in data and len(data["temperatures"]) > 0:
-							idx = np.where(data["temperatures"] == temp)[0]
-							if idx.size > 0 and idx[0] < len(data["values"]) and not np.isnan(data["values"][idx[0]]):
-								activity_value = f"{data['values'][idx[0]]:.6f}"
-					row.append(activity_value)
-					
-					# 活度系数
-					act_coef_value = ''
-					if model in self.calculation_results["activity_coefficient"]:
-						data = self.calculation_results["activity_coefficient"][model]
-						if "temperatures" in data and len(data["temperatures"]) > 0:
-							idx = np.where(data["temperatures"] == temp)[0]
-							if idx.size > 0 and idx[0] < len(data["values"]) and not np.isnan(data["values"][idx[0]]):
-								act_coef_value = f"{data['values'][idx[0]]:.6f}"
-					row.append(act_coef_value)
-				
-				writer.writerow(row)
-	
-	def export_to_excel (self, file_path):
-		"""导出数据到Excel格式"""
-		try:
-			import xlsxwriter
-		except ImportError:
-			QMessageBox.warning(self, "缺少依赖", "导出Excel需要安装xlsxwriter模块。将导出为CSV格式。")
-			self.export_to_csv(file_path.replace('.xlsx', '.csv'))
-			return
-		
-		# 创建工作簿和工作表
-		workbook = xlsxwriter.Workbook(file_path)
-		worksheet = workbook.add_worksheet('计算结果')
-		
-		# 设置格式
-		title_format = workbook.add_format({
-			'bold': True,
-			'font_size': 14,
-			'align': 'center',
-			'valign': 'vcenter',
-			'border': 0,
-			'font_color': '#2C3E50'
-		})
-		
-		header_format = workbook.add_format({
-			'bold': True,
-			'align': 'center',
-			'valign': 'vcenter',
-			'border': 1,
-			'bg_color': '#ECF0F1',
-			'font_color': '#2C3E50'
-		})
-		
-		param_label_format = workbook.add_format({
-			'bold': True,
-			'align': 'right',
-			'valign': 'vcenter',
-			'font_color': '#2C3E50'
-		})
-		
-		param_value_format = workbook.add_format({
-			'align': 'left',
-			'valign': 'vcenter',
-			'font_color': '#2980B9'
-		})
-		
-		data_format = workbook.add_format({
-			'num_format': '0.000000',
-			'align': 'center',
-			'valign': 'vcenter',
-			'border': 1
-		})
-		
-		temp_format = workbook.add_format({
-			'num_format': '0.0',
-			'align': 'center',
-			'valign': 'vcenter',
-			'border': 1,
-			'bg_color': '#F8F9F9'
-		})
-		
-		# 获取所有模型和所有温度点
-		all_models = set()
-		all_temperatures = set()
-		
-		for prop_data in self.calculation_results.values():
-			for model_key, data in prop_data.items():
-				all_models.add(model_key)
-				if "temperatures" in data and len(data["temperatures"]) > 0:
-					all_temperatures.update(data["temperatures"])
-		
-		# 排序温度点和模型名称
-		all_temperatures = sorted(all_temperatures)
-		all_models = sorted(all_models)
-		
-		# 写入标题
-		worksheet.merge_range('A1:F1', '热力学性质随温度变化计算结果', title_format)
-		
-		# 写入参数信息
-		worksheet.write(2, 0, '计算参数', header_format)
-		worksheet.write(3, 0, '基体合金:', param_label_format)
-		worksheet.write(3, 1, self.current_parameters["base_matrix"], param_value_format)
-		worksheet.write(4, 0, '溶剂元素:', param_label_format)
-		worksheet.write(4, 1, self.current_parameters["solvent"], param_value_format)
-		worksheet.write(5, 0, '溶质元素:', param_label_format)
-		worksheet.write(5, 1, self.current_parameters["solute"], param_value_format)
-		worksheet.write(6, 0, '相态:', param_label_format)
-		worksheet.write(6, 1, "固态" if self.current_parameters["phase_state"] == "S" else "液态", param_value_format)
-		worksheet.write(7, 0, '类型:', param_label_format)
-		worksheet.write(7, 1, self.current_parameters["order_degree"], param_value_format)
-		worksheet.write(8, 0, '外推模型:', param_label_format)
-		worksheet.write(8, 1, self.current_parameters["geo_model"], param_value_format)
-		
-		# 写入标题行 - 数据部分
-		row = 10
-		worksheet.write(row, 0, '温度 (K)', header_format)
-		col = 1
+		header = ['组成 (x)']
 		for model in all_models:
-			worksheet.write(row, col, f'{model}-活度', header_format)
-			worksheet.write(row, col + 1, f'{model}-活度系数', header_format)
-			col += 2
+			header.extend([f'{model}-混合焓(kJ/mol)', f'{model}-吉布斯能(kJ/mol)', f'{model}-混合熵(J/mol·K)'])
 		
-		# 写入数据行
-		row += 1
-		for temp in all_temperatures:
-			worksheet.write(row, 0, temp, temp_format)
-			col = 1
+		data_rows = []
+		for comp in sorted_compositions:
+			row = [comp]
 			for model in all_models:
-				# 活度
-				if model in self.calculation_results["activity"]:
-					data = self.calculation_results["activity"][model]
-					if "temperatures" in data and len(data["temperatures"]) > 0:
-						idx = np.where(data["temperatures"] == temp)[0]
-						if idx.size > 0 and idx[0] < len(data["values"]) and not np.isnan(data["values"][idx[0]]):
-							worksheet.write(row, col, data['values'][idx[0]], data_format)
-				col += 1
-				
-				# 活度系数
-				if model in self.calculation_results["activity_coefficient"]:
-					data = self.calculation_results["activity_coefficient"][model]
-					if "temperatures" in data and len(data["temperatures"]) > 0:
-						idx = np.where(data["temperatures"] == temp)[0]
-						if idx.size > 0 and idx[0] < len(data["values"]) and not np.isnan(data["values"][idx[0]]):
-							worksheet.write(row, col, data['values'][idx[0]], data_format)
-				col += 1
-			
-			row += 1
+				for prop in ["enthalpy", "gibbs", "entropy"]:
+					data = self.calculation_results[prop].get(model, {})
+					comps, vals = data.get("compositions", np.array([])), data.get("values", np.array([]))
+					idx = np.where(comps == comp)[0]
+					row.append(vals[idx[0]] if idx.size > 0 else None)
+			data_rows.append(row)
 		
-		# 设置列宽
-		worksheet.set_column(0, 0, 12)
-		for i in range(1, 2 * len(all_models) + 1):
-			worksheet.set_column(i, i, 18)
-		
-		# 保存并关闭工作簿
-		workbook.close()
+		# 3. 调用通用导出函数
+		export_data_to_file(
+				parent=self,
+				parameters=parameters,
+				header=header,
+				data=data_rows,
+				default_filename=f'{parameters["基体合金"]}-{parameters["添加元素"]}_composition_variation'
+		)
+	
+
+	

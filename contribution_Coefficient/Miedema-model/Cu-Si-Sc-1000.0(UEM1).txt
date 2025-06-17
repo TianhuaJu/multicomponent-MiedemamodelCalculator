@@ -1,0 +1,4 @@
+k-i£ºalpha^k_i(ij) 		 k-j £ºalpha^k_j(ij)
+Cu-Si:	0.023,	Cu-Sc:	0.013	in	Si-Sc
+Si-Cu:	0.034,	Si-Sc:	0.0	in	Cu-Sc
+Sc-Si:	0.0,	Sc-Cu:	0.021	in	Si-Cu

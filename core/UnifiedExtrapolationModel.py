@@ -5,7 +5,7 @@ from typing import Callable
 from scipy.integrate import quad
 from sympy import *
 from mpmath import mp
-import BinarySys as Bin_Miedema
+from . import BinarySys as Bin_Miedema
 import sympy as sp
 from typing import Dict, List, Tuple, Callable, Any # Use Any for the unknown model_func structure for now
 
