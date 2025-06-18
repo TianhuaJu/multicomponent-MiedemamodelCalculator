@@ -486,36 +486,104 @@ class ActivityCompositionVariationWidget(QWidget):
 		self.plot_property_variation(self.calculation_results.get(prop_key, {}), prop_key)
 	
 	def plot_property_variation (self, model_results, property_type):
-		"""绘制热力学性质随组分变化的图表"""
+		"""绘制属性变化图 - 增强线条区分度"""
 		self.figure.clear()
 		ax = self.figure.add_subplot(111)
-		colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
-		linestyles = ['-', '--', '-.', ':', (0, (3, 5, 1, 5)), (0, (5, 1))]
-		markers = ['o', 's', '^', 'D', 'v', 'p']
+		
+		# 设置高质量绘图参数
+		ax.set_facecolor('#fafafa')
+		ax.grid(True, linestyle='--', alpha=0.3, color='#94a3b8')
+		ax.spines['top'].set_visible(False)
+		ax.spines['right'].set_visible(False)
+		ax.spines['left'].set_color('#64748b')
+		ax.spines['bottom'].set_color('#64748b')
+		
+		# 定义线条样式参数 - 增强区分度
+		line_styles = {
+			'colors': ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'],
+			'markers': ['o', 's', '^', 'D', 'v', '<', '>', 'p'],
+			'linestyles': ['-', '--', '-.', ':', '-', '--', '-.', ':'],
+			'linewidths': [2.5, 2.0, 2.5, 2.0, 2.5, 2.0, 2.5, 2.0]
+		}
 		
 		plotted_models = 0
+		model_keys = list(model_results.keys())
+		
 		for i, (model_key, data) in enumerate(model_results.items()):
-			if data and len(data.get("values", [])) > 0:
+			values = data.get("values") if data else None
+			if data and values is not None and len(values) > 0:
+				# 获取样式参数 - 增强区分度
+				color = line_styles['colors'][i % len(line_styles['colors'])]
+				marker = line_styles['markers'][i % len(line_styles['markers'])]
+				linestyle = line_styles['linestyles'][i % len(line_styles['linestyles'])]
+				linewidth = line_styles['linewidths'][i % len(line_styles['linewidths'])]
+				
+				# 绘制线条，增强视觉效果
+				line = ax.plot(data["compositions"], data["values"],
+				               color=color,
+				               marker=marker,
+				               linestyle=linestyle,
+				               linewidth=linewidth,
+				               markersize=7,
+				               markeredgewidth=1.5,
+				               markeredgecolor='white',
+				               markerfacecolor=color,
+				               alpha=0.9,
+				               label=self.model_checkboxes[model_key].text(),
+				               zorder=10 - i)  # 控制绘制顺序
+				
+				# 添加数据点的细微阴影效果
 				ax.plot(data["compositions"], data["values"],
-				        color=colors[i % len(colors)],
-				        linestyle=linestyles[i % len(linestyles)],
-				        marker=markers[i % len(markers)],
-				        linewidth=2, markersize=5,
-				        label=self.model_checkboxes[model_key].text())
+				        color=color,
+				        marker=marker,
+				        linestyle='none',
+				        markersize=8,
+				        markeredgewidth=0,
+				        markerfacecolor=color,
+				        alpha=0.3,
+				        zorder=5 - i)
+				
 				plotted_models += 1
 		
+		# 设置标签和标题
 		target = self.current_parameters.get('target_element', 'i')
 		var = self.current_parameters.get('var_element', 'X')
-		y_label, title_prop = (f"活度 $a_{{{target}}}$", "活度") if property_type == "activity" else (
-		f"活度系数 $\\gamma_{{{target}}}$", "活度系数")
+		base_matrix_str = self.current_parameters.get('matrix_input', '')
 		
-		ax.set_xlabel(f"{var} 摩尔分数 (x)", fontsize=12, fontweight='bold')
-		ax.set_ylabel(y_label, fontsize=12, fontweight='bold')
-		ax.set_title(f"{self.current_parameters.get('base_matrix', '')} 中 {target} 的{title_prop}", fontsize=14,
-		             fontweight='bold', pad=12)
-		ax.grid(True, linestyle='--', alpha=0.6)
-		if plotted_models > 0: ax.legend()
-		self.figure.tight_layout()
+		if property_type == "activity":
+			y_label = f"活度 $a_{{{target}}}$"
+			title_prop = "活度"
+		else:
+			y_label = f"活度系数 $\\gamma_{{{target}}}$"
+			title_prop = "活度系数"
+		
+		# 优化轴标签样式
+		ax.set_xlabel(f"{var} 摩尔分数 (x)", fontsize=14, fontweight='bold', color='#1e293b')
+		ax.set_ylabel(y_label, fontsize=14, fontweight='bold', color='#1e293b')
+		ax.set_title(f"{base_matrix_str} 中 {target} 的{title_prop}变化",
+		             fontsize=16, fontweight='bold', pad=25, color='#0f172a')
+		
+		# 优化刻度标签
+		ax.tick_params(axis='both', which='major', labelsize=11, colors='#475569')
+		ax.tick_params(axis='both', which='minor', labelsize=9, colors='#64748b')
+		
+		# 优化图例
+		if plotted_models > 0:
+			legend = ax.legend(loc='best', frameon=True, fancybox=True,
+			                   shadow=True, fontsize=11, title='外推模型')
+			legend.get_frame().set_facecolor('#ffffff')
+			legend.get_frame().set_edgecolor('#e2e8f0')
+			legend.get_frame().set_linewidth(1)
+			legend.get_frame().set_alpha(0.95)
+			legend.get_title().set_fontweight('bold')
+			legend.get_title().set_fontsize(12)
+			legend.get_title().set_color('#334155')
+		
+		# 设置坐标轴范围，留出适当边距
+		if plotted_models > 0:
+			ax.margins(x=0.02, y=0.05)
+		
+		self.figure.tight_layout(pad=2.0)
 		self.canvas.draw()
 	
 	def export_data (self):

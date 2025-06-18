@@ -31,7 +31,7 @@ exe = EXE(
     pyz,
     a.scripts,
     [],
-    # exclude_binaries=True, # <--- 关键：删除或注释掉此行以创建单文件
+    exclude_binaries=True, # <--- 关键：删除或注释掉此行以创建单文件
     # 对于单文件构建，必须将二进制文件包含在exe内部，因此不能排除它们。
     # `False` 是默认值，删除此行即可。
     name='MiedemaModel',

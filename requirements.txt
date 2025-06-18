@@ -1,0 +1,8 @@
+# Miedema模型计算器依赖包
+PyQt5>=5.15.0
+matplotlib>=3.5.0
+numpy>=1.21.0
+pyinstaller>=5.0.0
+
+# 可选的优化包
+# upx  # 用于压缩可执行文件（需要单独下载UPX）

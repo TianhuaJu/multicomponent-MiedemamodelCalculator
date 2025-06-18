@@ -1,60 +1,158 @@
-# MiedemamodelApp_Pro.spec
+# -*- mode: python ; coding: utf-8 -*-
+
+import sys
 import os
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
-block_cipher = None
+# 收集所有必要的模块
+hiddenimports = [
+    # PyQt5相关
+    'PyQt5.QtCore',
+    'PyQt5.QtGui',
+    'PyQt5.QtWidgets',
+    'PyQt5.sip',
 
-# --- Analysis Section ---
-# PyInstaller 在这里分析你的代码，寻找依赖
+    # matplotlib相关
+    'matplotlib',
+    'matplotlib.pyplot',
+    'matplotlib.backends.backend_qt5agg',
+    'matplotlib.backends.backend_qt5',
+    'matplotlib.figure',
+    'matplotlib.style',
+    'matplotlib.font_manager',
+    'matplotlib._path',
+    'matplotlib.ft2font',
+
+    # numpy和科学计算
+    'numpy',
+    'numpy.core',
+    'numpy.core._methods',
+    'numpy.lib.format',
+
+    # 您的自定义模块
+    'core',
+    'core.UnifiedExtrapolationModel',
+    'utils',
+    'utils.tool',
+    'GUI',
+    'GUI.SingleCalculationWidget',
+    'GUI.CompositionVariationWidget',
+    'GUI.TemperatureVariationWidget',
+    'GUI.ActivityCoefficientWidget',
+    'GUI.ActivityCompositionVariationWidget',
+    'GUI.ActivityTemperatureVariationWidget',
+]
+
+# 收集matplotlib的数据文件
+matplotlib_datas = collect_data_files('matplotlib', include_py_files=False)
+
+# 收集字体文件
+font_datas = []
+try:
+    import matplotlib
+    mpl_data_dir = matplotlib.get_data_path()
+    font_datas.append((os.path.join(mpl_data_dir, 'fonts'), 'matplotlib/mpl-data/fonts'))
+except:
+    pass
+
+# 定义数据文件
+datas = [
+('core/BinaryData', 'core/BinaryData'),
+    # 图标文件
+    ('app_icon.ico', '.'),
+    # matplotlib数据文件
+    *matplotlib_datas,
+    # 字体文件
+    *font_datas,
+]
+
+# 如果有其他数据文件夹，请添加
+# 例如：('data', 'data'), ('config', 'config')
+
+# 定义要排除的模块（减小文件大小）
+excludes = [
+    'tkinter',
+    'unittest',
+    'email',
+    'http',
+    'urllib',
+    'xml',
+    'pydoc',
+    'doctest',
+    # 注意：不要排除这些，因为可能被您的程序使用
+    # 'argparse',
+    # 'subprocess',
+    # 'csv',
+    # 'json',
+    # 'pickle',
+    'multiprocessing',
+    'concurrent',
+    'sqlite3',
+    'lzma',
+    'bz2',
+    'zipfile',
+    'tarfile',
+    'IPython',
+    'jupyter',
+    'notebook',
+    'qtconsole',
+    'PIL',
+    'tornado',
+    'zmq',
+]
+
+# 分析阶段
 a = Analysis(
-    ['MiedemamodelApp_Pro.py'],
-    pathex=[os.getcwd()],  # 确保PyInstaller能找到当前目录下的模块，比如GUI文件夹
+    ['MiedemaModelApp_Pro.py'],
+    pathex=['.'],
     binaries=[],
-    datas=[
-        ('app_icon.ico', '.'), # 将图标文件打包到根目录
-        # 如果您还有之前提到的数据库文件夹，也在这里添加
-        # ('core/BinaryData', 'core/BinaryData')
-    ],
-    hiddenimports=[
-        'PyQt5.QtCore',
-        'PyQt5.QtGui',
-        'PyQt5.QtWidgets',
-        'numpy',
-        'scipy',
-        'matplotlib.backends.backend_qt5agg' # Matplotlib的PyQt5后端，非常重要
-    ],
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=excludes,
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=block_cipher,
+    cipher=None,
     noarchive=False,
 )
 
-# --- PYZ Section ---
-# 将所有Python模块打包成一个 .pyz 压缩文件
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+# 移除重复项
+pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 
-# --- EXE Section ---
-# 创建最终的可执行文件
+# 创建可执行文件
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=False, # 确保为False，以包含所有二进制文件
-    name='MiedemaModel_Pro',  # 您可以自定义最终生成的文件名
+    name='MiedemaModelCalculator',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True, # 使用UPX压缩（如果已安装），可减小文件体积
+    upx=False,  # 建议设置为False，UPX可能导致兼容性问题
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,  # 关键：设置为False以隐藏控制台窗口
+    console=False,  # 设置为False隐藏控制台窗口
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='app_icon.ico'  # 关键：设置exe文件在Windows中的显示图标
+    icon='app_icon.ico' if os.path.exists('app_icon.ico') else None,  # 条件性设置图标
 )
+
+# 如果需要生成文件夹版本而不是单文件，请使用以下配置：
+# coll = COLLECT(
+#     exe,
+#     a.binaries,
+#     a.zipfiles,
+#     a.datas,
+#     strip=False,
+#     upx=True,
+#     upx_exclude=[],
+#     name='MiedemaModelCalculator'
+# )
